@@ -9,6 +9,10 @@ class UrlMappings {
                 "/approvers"(controller: 'receiptForm', action: 'approvers', method: 'GET')
             }
             "/centers"(resources: 'assetCenter')
+            "/areas"(resources: 'area')
+            "/transferForms"(resources: 'transferForm') {
+                "/approvers"(controller: 'transferForm', action: 'approvers', method: 'GET')
+            }
         }
         "/approvers"(resources: 'approver', includes:[]){
             "/receiptApprovals"(resources: 'receiptApproval', includes:['index']) {

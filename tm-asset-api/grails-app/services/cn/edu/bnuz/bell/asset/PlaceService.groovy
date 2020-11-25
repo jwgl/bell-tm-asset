@@ -132,6 +132,12 @@ where r.id = :id
     }
 
     def getPlaces() {
-        Room.executeQuery("select distinct new map(building as building, name as name, name as value) from Room order by name")
+        Room.executeQuery'''
+select distinct new map(
+id as id,
+building as building,
+name as name,
+name as value
+) from Room order by name'''
     }
 }
