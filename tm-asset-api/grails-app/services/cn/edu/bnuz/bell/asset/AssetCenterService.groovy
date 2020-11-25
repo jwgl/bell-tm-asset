@@ -1,10 +1,13 @@
 package cn.edu.bnuz.bell.asset
 
+import cn.edu.bnuz.bell.security.SecurityService
+import cn.edu.bnuz.bell.security.User
 import grails.gorm.transactions.Transactional
 
 @Transactional
 class AssetCenterService {
     PlaceService placeService
+    SecurityService securityService
 
     def list(AssetOptionCommand cmd) {
         def sqlStr = '''
@@ -44,6 +47,7 @@ left join a.supplier s
                 places: placeService.places,
                 assetNames: assetNames,
                 states: states,
+                areas: UserArea.executeQuery("select distinct building from UserArea where user = :user", [user: User.load(securityService.userId)]),
         ]
     }
 
