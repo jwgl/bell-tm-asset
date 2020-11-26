@@ -18,6 +18,9 @@ class UrlMappings {
             "/receiptApprovals"(resources: 'receiptApproval', includes:['index']) {
                 "/workitems"(resources: 'receiptApproval', includes: ['show', 'patch'])
             }
+            "/checkoutApprovals"(resources: 'checkoutApproval', includes:['index']) {
+                "/workitems"(resources: 'checkoutApproval', includes: ['show', 'patch'])
+            }
         }
 
         "/models"(resources: 'model', include: ['index'])

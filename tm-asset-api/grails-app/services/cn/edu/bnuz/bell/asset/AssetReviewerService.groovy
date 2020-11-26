@@ -12,9 +12,8 @@ class AssetReviewerService implements ReviewerProvider{
     List<Map> getReviewers(Object id, String activity) {
         switch (activity) {
             case Activities.CHECK:
-                return getCheckers(id) + getApprovers()
             case Activities.APPROVE:
-                return getApprovers()
+                return getCheckers() + getApprovers()
             case Activities.REVIEW:
                 return getReviewers() + getApprovers()
             default:
