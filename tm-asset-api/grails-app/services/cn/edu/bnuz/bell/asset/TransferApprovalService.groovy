@@ -1,7 +1,6 @@
 package cn.edu.bnuz.bell.asset
 
 import cn.edu.bnuz.bell.asset.stateMachine.Event
-import cn.edu.bnuz.bell.asset.stateMachine.Status
 import cn.edu.bnuz.bell.http.BadRequestException
 import cn.edu.bnuz.bell.http.ForbiddenException
 import cn.edu.bnuz.bell.organization.Teacher
@@ -141,8 +140,9 @@ order by tf.dateSubmitted desc
                 throw new ForbiddenException()
             }
             item.asset.state = item.asset.passAction(Event.CHECKOUT)
+            item.asset.room = transferForm.toPlace
         }
-        logService.log(Event.CHECKOUT as String, "批准领用#${transferForm.id}", null, null)
+        logService.log(Event.CHECKOUT as String, "批准领用#${transferForm.id}", transferForm.toPlace, null)
     }
 
     void reject(RejectCommand cmd, String userId, UUID workitemId) {

@@ -1,5 +1,6 @@
 package cn.edu.bnuz.bell.asset
 
+import cn.edu.bnuz.bell.asset.stateMachine.Event
 import cn.edu.bnuz.bell.http.BadRequestException
 import cn.edu.bnuz.bell.http.NotFoundException
 import cn.edu.bnuz.bell.organization.Teacher
@@ -16,6 +17,7 @@ import java.time.LocalDate
 @Transactional
 class ReceiptFormService {
     SecurityService securityService
+    LogService logService
 
     @Resource(name='receiptReviewStateMachine')
     DomainStateMachineHandler domainStateMachineHandler
@@ -230,6 +232,7 @@ where ri.receipt.id = :formId
             throw new BadRequestException()
         }
         domainStateMachineHandler.submit(form, securityService.userId, cmd.to, cmd.comment, cmd.title)
+        logService.log('入库', "申请入库#${form.id}", null, null)
         form.save()
     }
 }

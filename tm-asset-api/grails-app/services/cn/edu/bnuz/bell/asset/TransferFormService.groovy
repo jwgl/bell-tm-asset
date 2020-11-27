@@ -14,6 +14,7 @@ import java.time.LocalDate
 class TransferFormService {
     @Resource(name='receiptReviewStateMachine')
     DomainStateMachineHandler domainStateMachineHandler
+    LogService logService
 
     def list(userId) {
         TransferForm.executeQuery'''
@@ -46,7 +47,7 @@ where o.id = :userId
                 operator: Teacher.load(userId),
                 dateSubmitted: LocalDate.now(),
                 fromPlace: Room.load(10006),
-                transferType: TransferType.findByName('领用'),
+                transferType: TransferType.findByName(cmd.transferType),
                 toPlace: Room.load(cmd.toId),
                 status: domainStateMachineHandler.initialState
         )
@@ -109,6 +110,8 @@ select new map(
     a.note as note,
     a.state as state,
     s.name as supplier,
+    r.building as building,
+    r.name as place,
     m.id as assetModelId,
     m.brand as brand,
     m.specs as specs,
@@ -118,6 +121,7 @@ from TransferItem tfi
 join tfi.asset a
 left join a.assetModel m
 left join a.supplier s
+left join a.room r
 where tfi.transferForm.id = :formId
 ''', [formId: id]
             return form
@@ -136,6 +140,7 @@ where tfi.transferForm.id = :formId
         if (!domainStateMachineHandler.canSubmit(form)) {
             throw new BadRequestException()
         }
+        logService.log(form.transferType.name, "申请${form.transferType.name}#${form.id}", form.toPlace, null)
         domainStateMachineHandler.submit(form, userId, cmd.to, cmd.comment, cmd.title)
         form.save()
     }
