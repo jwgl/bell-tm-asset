@@ -18,8 +18,8 @@ class UrlMappings {
             "/receiptApprovals"(resources: 'receiptApproval', includes:['index']) {
                 "/workitems"(resources: 'receiptApproval', includes: ['show', 'patch'])
             }
-            "/checkoutApprovals"(resources: 'checkoutApproval', includes:['index']) {
-                "/workitems"(resources: 'checkoutApproval', includes: ['show', 'patch'])
+            "/transferApprovals"(resources: 'transferApproval', includes:['index']) {
+                "/workitems"(resources: 'transferApproval', includes: ['show', 'patch'])
             }
         }
 

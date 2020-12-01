@@ -28,26 +28,25 @@ class TransferApprovalService {
     DomainStateMachineHandler domainStateMachineHandler
     LogService logService
 
-    def getCounts(String userId, String transferType) {
-        TransferType type = TransferType.findByAction(transferType)
+    def getCounts(String userId, List<TransferType> types) {
         [
-                (ListType.TODO): TransferForm.countByStatusAndTransferType(State.SUBMITTED, type),
-                (ListType.DONE): TransferForm.countByApproverAndTransferType(Teacher.load(userId), type)
+                (ListType.TODO): TransferForm.countByStatusAndTransferTypeInList(State.SUBMITTED, types),
+                (ListType.DONE): TransferForm.countByApproverAndTransferTypeInList(Teacher.load(userId), types)
         ]
     }
 
-    def list(String userId, ListCommand cmd, String transferType) {
+    def list(String userId, ListCommand cmd, List<TransferType> types) {
         switch (cmd.type) {
             case ListType.TODO:
-                return findTodoList(userId, cmd, transferType)
+                return findTodoList(userId, cmd, types)
             case ListType.DONE:
-                return findDoneList(userId, cmd, transferType)
+                return findDoneList(userId, cmd, types)
             default:
                 throw new BadRequestException()
         }
     }
 
-    def findTodoList(String userId, ListCommand cmd, String transferType) {
+    def findTodoList(String userId, ListCommand cmd, List<TransferType> types) {
         def forms = TransferForm.executeQuery'''
 select new map(
     tf.id as id,
@@ -64,17 +63,17 @@ select new map(
 )
 from TransferForm tf
 join tf.operator o
-join tf.fromPlace fp
+left join tf.fromPlace fp
 join tf.transferType tt
 join tf.toPlace tp
 left join tf.approver a
-where tf.status = :status and tt.action = : transferType
+where tf.status = :status and tf.transferType in (:types)
 order by tf.dateSubmitted desc
-''', [status: State.SUBMITTED, transferType: transferType], [offset: cmd.offset, max: cmd.max]
-        return [forms: forms, counts: getCounts(userId, transferType)]
+''', [status: State.SUBMITTED, types: types], [offset: cmd.offset, max: cmd.max]
+        return [forms: forms, counts: getCounts(userId, types)]
     }
 
-    def findDoneList(String userId, ListCommand cmd, String transferType) {
+    def findDoneList(String userId, ListCommand cmd, List<TransferType> types) {
         def forms = TransferForm.executeQuery'''
 select new map(
     tf.id as id,
@@ -91,17 +90,17 @@ select new map(
 )
 from TransferForm tf
 join tf.operator o
-join tf.fromPlace fp
+left join tf.fromPlace fp
 join tf.transferType tt
 join tf.toPlace tp
 join tf.approver a
-where a.id = :userId and tt.action = : transferType
+where a.id = :userId and tf.transferType in (:types)
 order by tf.dateSubmitted desc
-''', [userId: userId, transferType: transferType], [offset: cmd.offset, max: cmd.max]
-        return [forms: forms, counts: getCounts(userId, transferType)]
+''', [userId: userId, types: types], [offset: cmd.offset, max: cmd.max]
+        return [forms: forms, counts: getCounts(userId, types)]
     }
 
-    def getFormForReview(String userId, Long id, ListType type, String transferType) {
+    def getFormForReview(String userId, Long id, ListType type, List<TransferType> types) {
         def form = transferFormService.getFormInfo(id)
 
         def workitem = Workitem.findByInstanceAndActivityAndToAndDateProcessedIsNull(
@@ -115,18 +114,18 @@ order by tf.dateSubmitted desc
 
         return [
                 form: form,
-                counts: getCounts(userId, transferType),
+                counts: getCounts(userId, types),
                 workitemId: workitem ? workitem.id : null,
         ]
 
     }
 
-    def getFormForReview(String userId, Long id, ListType type, UUID workitemId, String transferType) {
+    def getFormForReview(String userId, Long id, ListType type, UUID workitemId, List<TransferType> types) {
         def form = transferFormService.getFormInfo(id)
 
         return [
                 form: form,
-                counts: getCounts(userId, transferType),
+                counts: getCounts(userId, types),
                 workitemId: workitemId,
         ]
     }

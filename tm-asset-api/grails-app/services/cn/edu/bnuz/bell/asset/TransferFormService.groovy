@@ -78,6 +78,8 @@ where o.id = :userId
         }
         if (type.action != 'TRANSFER') {
             domainStateMachineHandler.create(form, userId)
+        } else {
+            logService.log(form.transferType.name, "${form.transferType.name}#${form.id}", form.toPlace, null)
         }
         return form
     }

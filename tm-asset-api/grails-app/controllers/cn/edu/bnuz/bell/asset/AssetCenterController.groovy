@@ -10,4 +10,6 @@ class AssetCenterController {
     def index(AssetOptionCommand cmd) {
         renderJson assetCenterService.list(cmd)
     }
+
+    
 }
