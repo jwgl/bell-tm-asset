@@ -62,7 +62,7 @@ join r.placeType tp
                 departments: departmentService.allDepartments,
                 seatTypes: SeatType.findAll("from SeatType order by name"),
                 purposes: Purpose.all,
-                placeTypes: RoomType.findAll("from RoomType order by level1,level2"),
+                placeTypes: RoomType.findAll("from RoomType where id < 33 or id > 37 order by level1,level2"),
                 buildings: buildings
         ]
     }
@@ -92,6 +92,7 @@ where r.id = :id
     }
 
     def getFormForEdit(Long id) {
+        // 保留id在100以内的房间为特殊房间，不能编辑
         def result = Room.executeQuery'''
 select new map(
 r.id as id,
@@ -111,7 +112,7 @@ tp.id as placeTypeId
 from Room r
 join r.department d
 join r.placeType tp
-where r.id = :id
+where r.id = :id and r.id >100
 ''', [id: id]
         if (result) {
             return [
@@ -139,5 +140,13 @@ building as building,
 name as name,
 name as value
 ) from Room order by name'''
+    }
+
+    def delete(Long id) {
+        Room room = Room.load((id))
+        if (!room) {
+            throw new BadHttpRequest()
+        }
+        room.delete()
     }
 }

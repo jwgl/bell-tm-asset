@@ -1,11 +1,14 @@
 package cn.edu.bnuz.bell.asset
 
+import cn.edu.bnuz.bell.asset.stateMachine.Status
 import cn.edu.bnuz.bell.http.BadRequestException
 import cn.edu.bnuz.bell.http.NotFoundException
 import cn.edu.bnuz.bell.organization.Teacher
 import cn.edu.bnuz.bell.workflow.DomainStateMachineHandler
+import cn.edu.bnuz.bell.workflow.State
 import cn.edu.bnuz.bell.workflow.commands.SubmitCommand
 import grails.gorm.transactions.Transactional
+import javassist.tools.web.BadHttpRequest
 
 import javax.annotation.Resource
 import java.time.LocalDate
@@ -33,7 +36,7 @@ select new map(
 )
 from TransferForm tf
 join tf.operator o
-join tf.fromPlace fp
+left join tf.fromPlace fp
 join tf.transferType tt
 join tf.toPlace tp
 left join tf.approver a
@@ -42,19 +45,29 @@ where o.id = :userId
     }
 
     def create(String userId, TransferFormCommand cmd) {
+        TransferType type = TransferType.findByName(cmd.transferType)
+        Room toPlace = Room.load(cmd.toId)
         def form = new TransferForm(
                 note: cmd.note,
                 operator: Teacher.load(userId),
                 dateSubmitted: LocalDate.now(),
-                fromPlace: Room.load(10006),
-                transferType: TransferType.findByName(cmd.transferType),
-                toPlace: Room.load(cmd.toId),
-                status: domainStateMachineHandler.initialState
+                fromPlace: Room.load(cmd.fromId),
+                transferType: type,
+                toPlace: toPlace,
+                status: type.action == 'TRANSFER' ? State.FINISHED : domainStateMachineHandler.initialState
         )
         cmd.addedItems.each { item ->
+            Asset asset = Asset.load(item.id)
+            if (type.action == 'TRANSFER') {
+                asset.setRoom(toPlace)
+                asset.setState(toPlace.placeType.state as Status)
+                asset.save()
+            }
             TransferItem transferItem = new TransferItem(
-                    asset: Asset.load(item.id),
-                    note: item.note
+                    asset: asset,
+                    note: item.note,
+                    source: asset.room,
+                    state: asset.state
             )
             form.addToItems(transferItem)
         }
@@ -63,8 +76,9 @@ where o.id = :userId
                 println(it)
             }
         }
-
-        domainStateMachineHandler.create(form, userId)
+        if (type.action != 'TRANSFER') {
+            domainStateMachineHandler.create(form, userId)
+        }
         return form
     }
 
@@ -86,7 +100,7 @@ select new map(
 )
 from TransferForm tf
 join tf.operator o
-join tf.fromPlace fp
+left join tf.fromPlace fp
 join tf.transferType tt
 join tf.toPlace tp
 left join tf.approver a
@@ -108,7 +122,7 @@ select new map(
     a.unit as unit,
     a.pcs as pcs,
     a.note as note,
-    a.state as state,
+    tfi.state as state,
     s.name as supplier,
     r.building as building,
     r.name as place,
@@ -121,7 +135,7 @@ from TransferItem tfi
 join tfi.asset a
 left join a.assetModel m
 left join a.supplier s
-left join a.room r
+left join tfi.source r
 where tfi.transferForm.id = :formId
 ''', [formId: id]
             return form
@@ -143,5 +157,16 @@ where tfi.transferForm.id = :formId
         logService.log(form.transferType.name, "申请${form.transferType.name}#${form.id}", form.toPlace, null)
         domainStateMachineHandler.submit(form, userId, cmd.to, cmd.comment, cmd.title)
         form.save()
+    }
+
+    def delete(Long id) {
+        TransferForm form = TransferForm.load(id)
+        if (!form) {
+            throw new BadHttpRequest()
+        }
+        form.items.each {
+            it.delete()
+        }
+        form.delete()
     }
 }

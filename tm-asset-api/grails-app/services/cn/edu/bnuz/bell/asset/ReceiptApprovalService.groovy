@@ -140,6 +140,7 @@ order by r.dateCheckIn desc
                         fault: false,
                         state: Status.STANDBY,
                         receipt: receipt,
+                        room: Room.load(1)
                 )
                 if (!asset.save()) {
                     asset.errors.each {

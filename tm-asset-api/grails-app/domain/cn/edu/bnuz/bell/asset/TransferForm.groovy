@@ -89,6 +89,7 @@ class TransferForm implements StateObject {
         note nullable: true
         workflowInstance nullable: true
         otherInfo nullable: true
+        fromPlace nullable: true
     }
 
     String getWorkflowId() {

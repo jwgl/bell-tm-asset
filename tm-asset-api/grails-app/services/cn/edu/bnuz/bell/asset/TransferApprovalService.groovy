@@ -1,8 +1,8 @@
 package cn.edu.bnuz.bell.asset
 
 import cn.edu.bnuz.bell.asset.stateMachine.Event
+import cn.edu.bnuz.bell.asset.stateMachine.Status
 import cn.edu.bnuz.bell.http.BadRequestException
-import cn.edu.bnuz.bell.http.ForbiddenException
 import cn.edu.bnuz.bell.organization.Teacher
 import cn.edu.bnuz.bell.security.User
 import cn.edu.bnuz.bell.workflow.Activities
@@ -29,9 +29,10 @@ class TransferApprovalService {
     LogService logService
 
     def getCounts(String userId, String transferType) {
+        TransferType type = TransferType.findByAction(transferType)
         [
-                (ListType.TODO): TransferForm.countByStatusAndTransferType(State.SUBMITTED, TransferType.findByName(transferType)),
-                (ListType.DONE): TransferForm.countByApproverAndTransferType(Teacher.load(userId), TransferType.findByName(transferType))
+                (ListType.TODO): TransferForm.countByStatusAndTransferType(State.SUBMITTED, type),
+                (ListType.DONE): TransferForm.countByApproverAndTransferType(Teacher.load(userId), type)
         ]
     }
 
@@ -67,7 +68,7 @@ join tf.fromPlace fp
 join tf.transferType tt
 join tf.toPlace tp
 left join tf.approver a
-where tf.status = :status and tt.name = : transferType
+where tf.status = :status and tt.action = : transferType
 order by tf.dateSubmitted desc
 ''', [status: State.SUBMITTED, transferType: transferType], [offset: cmd.offset, max: cmd.max]
         return [forms: forms, counts: getCounts(userId, transferType)]
@@ -94,7 +95,7 @@ join tf.fromPlace fp
 join tf.transferType tt
 join tf.toPlace tp
 join tf.approver a
-where a.id = :userId and tt.name = : transferType
+where a.id = :userId and tt.action = : transferType
 order by tf.dateSubmitted desc
 ''', [userId: userId, transferType: transferType], [offset: cmd.offset, max: cmd.max]
         return [forms: forms, counts: getCounts(userId, transferType)]
@@ -136,13 +137,13 @@ order by tf.dateSubmitted desc
         transferForm.approver = Teacher.load(userId)
         transferForm.dateApproved = LocalDate.now()
         transferForm.items.each { item ->
-            if (!item.asset.canAction(Event.CHECKOUT)) {
-                throw new ForbiddenException()
+            if (!item.asset.canAction(transferForm.transferType.action as Event, transferForm.toPlace.placeType.state as Status)) {
+                throw new BadRequestException("设备当前状态不允许${transferForm.transferType.name}或不可以流转到目标房间")
             }
-            item.asset.state = item.asset.passAction(Event.CHECKOUT)
+            item.asset.state =  transferForm.toPlace.placeType.state as Status
             item.asset.room = transferForm.toPlace
         }
-        logService.log(Event.CHECKOUT as String, "批准领用#${transferForm.id}", transferForm.toPlace, null)
+        logService.log(transferForm.transferType.name, "批准#${transferForm.id}", transferForm.toPlace, null)
     }
 
     void reject(RejectCommand cmd, String userId, UUID workitemId) {

@@ -235,4 +235,12 @@ where ri.receipt.id = :formId
         logService.log('入库', "申请入库#${form.id}", null, null)
         form.save()
     }
+
+    def delete(Long id) {
+        Receipt form = Receipt.load((id))
+        if (!form) {
+            throw new BadHttpRequest()
+        }
+        form.delete()
+    }
 }

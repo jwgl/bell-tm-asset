@@ -34,4 +34,17 @@ class PlaceController {
     def edit(Long id) {
         renderJson placeService.getFormForEdit(id)
     }
+
+    @PreAuthorize('hasAuthority("PERM_ASSET_PLACE_WRITE")')
+    /**
+     * 删除
+     */
+    def delete(Long id) {
+        if (id > 100) {
+            placeService.delete(id)
+            renderOk()
+        } else {
+            renderForbidden()
+        }
+    }
 }

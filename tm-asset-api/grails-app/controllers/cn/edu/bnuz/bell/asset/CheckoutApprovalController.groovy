@@ -11,7 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize
 @PreAuthorize('hasRole("ROLE_ASSET_CENTER_ADMIN")')
 class CheckoutApprovalController {
 	TransferApprovalService transferApprovalService
-    final static String TYPE = '领用'
+    final static String TYPE = 'CHECKOUT'
 
     def index(String approverId, ListCommand cmd) {
         renderJson transferApprovalService.list(approverId, cmd, TYPE)

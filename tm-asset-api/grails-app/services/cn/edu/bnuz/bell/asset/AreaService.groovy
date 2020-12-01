@@ -25,6 +25,7 @@ select new map(
     a.state as state,
     s.name as supplier,
     r.building as building,
+    r.id as roomId,
     r.name as place,
     m.id as assetModelId,
     m.brand as brand,
@@ -35,13 +36,15 @@ from Asset a
 left join a.assetModel m
 left join a.room r
 left join a.supplier s
-where not exists(select tf.id from TransferItem ti join ti.transferForm tf where tf.status in ('CREATED', 'SUBMITTED') and ti.asset.id = a.id)
+where 
+(r.building in :areas or r.id = 1)
+and not exists(select tf.id from TransferItem ti join ti.transferForm tf where tf.status in ('CREATED', 'SUBMITTED') and ti.asset.id = a.id)
 '''
         if (!cmd.criterion.isEmpty()) {
             sqlStr += " and ${cmd.criterion}"
         }
         sqlStr += ' order by r.building, r.name'
-        def list = Asset.executeQuery sqlStr, cmd.args
+        def list = Asset.executeQuery sqlStr, cmd.args + [areas: areas]
         return [
                 list: list,
                 buildings: buildings,
@@ -57,7 +60,7 @@ where not exists(select tf.id from TransferItem ti join ti.transferForm tf where
 select distinct new map(a.name as name, a.name as value)
 from Asset a
 left join a.room r
-where r.building in :buildings or r.id = 6
+where r.building in :buildings or r.id = 1
 order by a.name''', [buildings: areas]
     }
 
