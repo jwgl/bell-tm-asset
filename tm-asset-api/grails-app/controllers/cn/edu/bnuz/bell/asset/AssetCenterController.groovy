@@ -11,5 +11,11 @@ class AssetCenterController {
         renderJson assetCenterService.list(cmd)
     }
 
-    
+    /**
+     * 批量修改编号
+     */
+    def save() {
+        String data = request.JSON['data']
+        renderJson assetCenterService.update(data)
+    }
 }

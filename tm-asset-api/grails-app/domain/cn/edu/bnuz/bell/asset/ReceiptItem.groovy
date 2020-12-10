@@ -100,5 +100,6 @@ class ReceiptItem {
         note nullable: true
         dateBought nullable: true
         name nullable: true
+        assetModel nullable: true
     }
 }

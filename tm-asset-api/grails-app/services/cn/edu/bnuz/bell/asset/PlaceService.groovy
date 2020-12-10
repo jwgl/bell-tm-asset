@@ -1,13 +1,18 @@
 package cn.edu.bnuz.bell.asset
 
+import cn.edu.bnuz.bell.asset.stateMachine.Event
 import cn.edu.bnuz.bell.organization.Department
 import cn.edu.bnuz.bell.organization.DepartmentService
+import cn.edu.bnuz.bell.security.SecurityService
+import grails.converters.JSON
 import grails.gorm.transactions.Transactional
 import javassist.tools.web.BadHttpRequest
 
 @Transactional
 class PlaceService {
+    SecurityService securityService
     DepartmentService departmentService
+    LogService logService
 
     def list(RoomOptionCommand cmd) {
         def sqlStr = '''
@@ -54,6 +59,34 @@ join r.placeType tp
             }
         }
         return form
+    }
+
+    def update(RoomCommand cmd) {
+        Room form = Room.load(cmd.id)
+        Map change = [
+                from: [
+                    seat: form.seat,
+                    measure: form.measure
+                ],
+                to: [
+                    seat: cmd.seat,
+                    measure: cmd.measure
+                ]
+        ]
+        logService.log('UPDATE', "${change as JSON}", form, null)
+        form.setSeat(cmd.seat)
+        form.setMeasure(cmd.measure)
+        if (securityService.hasPermission('PERM_ASSET_PLACE_WRITE')) {
+            form.setName(cmd.name)
+            form.setBuilding(cmd.building)
+            form.setStatus(cmd.status)
+            form.setPurpose(cmd.purpose)
+            form.setNote(cmd.note)
+            form.setSeatType(cmd.seatType)
+            form.setDepartment(Department.load(cmd.departmentId))
+            form.setPlaceType(RoomType.load(cmd.placeTypeId))
+        }
+        form.save(flush: true)
     }
 
     def getFormForCreate() {
@@ -147,6 +180,7 @@ name as value
         if (!room) {
             throw new BadHttpRequest()
         }
+        logService.log('DELETE', "${room as JSON}", null, null)
         room.delete()
     }
 }

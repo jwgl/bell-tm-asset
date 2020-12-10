@@ -1,5 +1,6 @@
 package cn.edu.bnuz.bell.asset
 
+import cn.edu.bnuz.bell.organization.Teacher
 import cn.edu.bnuz.bell.security.SecurityService
 import cn.edu.bnuz.bell.security.User
 import grails.gorm.transactions.Transactional
@@ -15,7 +16,6 @@ select new map(
     a.sn as sn,
     a.code as code,
     a.name as name,
-    a.price as price,
     a.unit as unit,
     a.dateBought as dateBought,
     a.qualifyMonth as qualifyMonth,
@@ -71,7 +71,7 @@ order by a.name''', [buildings: areas]
     def getBuildings() {
         UserArea.executeQuery'''
 select distinct new map(building as name, building as value)
-from UserArea where user = :user''', [user: User.load(securityService.userId)]
+from UserArea where user = :user''', [user: Teacher.load(securityService.userId)]
     }
 
     def getPlaces() {
@@ -83,6 +83,37 @@ order by name''', [buildings: areas]
     }
 
     def getAreas() {
-        UserArea.executeQuery("select distinct building from UserArea where user = :user", [user: User.load(securityService.userId)])
+        UserArea.executeQuery("select distinct building from UserArea where user = :user", [user: Teacher.load(securityService.userId)])
+    }
+
+    def getFormInfo(Long id) {
+        def result = Asset.executeQuery'''
+select new map(
+a.id as id,
+    a.sn as sn,
+    a.code as code,
+    a.name as name,
+    a.state as state,
+    a.dateBought as dateBought,
+    a.qualifyMonth as qualifyMonth,
+    a.assetType as assetType,
+    a.unit as unit,
+    a.pcs as pcs,
+    a.note as note,
+    s.name as supplier,
+    r.building as building,
+    r.name as place,
+    m.id as assetModelId,
+    m.brand as brand,
+    m.specs as specs,
+    m.parameter as parameter
+)
+from Asset a
+left join a.assetModel m
+left join a.supplier s
+left join a.room r
+where a.id = :id
+''', [id: id]
+        return result ? [form: result[0]] : [form: []]
     }
 }

@@ -1,9 +1,9 @@
 package cn.edu.bnuz.bell.asset
 
-import cn.edu.bnuz.bell.security.User
+import cn.edu.bnuz.bell.organization.Teacher
 
 class UserArea {
-    User user
+    Teacher user
     String building
 
     static mapping = {

@@ -8,7 +8,12 @@ class AreaController {
 
     AreaService areaService
 
+
     def index(AssetOptionCommand cmd) {
         renderJson areaService.list(cmd)
+    }
+
+    def show(Long id) {
+        renderJson areaService.getFormInfo(id)
     }
 }
