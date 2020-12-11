@@ -48,21 +48,6 @@ order by r.dateCheckIn desc
         ]
     }
 
-    def findModels(String q) {
-        AssetModel.executeQuery'''
-select new map(
-    am.id as id,
-    am.name as name,
-    am.brand as brand,
-    am.specs as specs,
-    am.parameter as parameter
-)
-from AssetModel am
-where am.name like :q or am.brand like :q or am.specs like :q
-order by am.name, am.brand
-''', [q: "%${q}%"]
-    }
-
     def create(ReceiptFormCommand cmd) {
         def form = new Receipt(
                 note: cmd.note,

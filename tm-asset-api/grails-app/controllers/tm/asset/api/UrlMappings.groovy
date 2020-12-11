@@ -23,7 +23,7 @@ class UrlMappings {
             }
         }
 
-        "/models"(resources: 'model', include: ['index'])
+        "/models"(resources: 'model', include: ['index', 'save'])
 
         "500"(view: '/error')
         "404"(view: '/notFound')
