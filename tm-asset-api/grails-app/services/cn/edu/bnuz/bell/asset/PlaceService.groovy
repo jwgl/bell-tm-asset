@@ -50,7 +50,7 @@ join r.placeType tp
                 purpose: cmd.purpose,
                 note: cmd.note,
                 seatType: cmd.seatType,
-                department: Department.load(cmd.departmentId),
+                department: Dept.load(cmd.departmentId),
                 placeType: RoomType.load(cmd.placeTypeId)
         )
         if (!form.save()){
@@ -83,7 +83,7 @@ join r.placeType tp
             form.setPurpose(cmd.purpose)
             form.setNote(cmd.note)
             form.setSeatType(cmd.seatType)
-            form.setDepartment(Department.load(cmd.departmentId))
+            form.setDepartment(Dept.load(cmd.departmentId))
             form.setPlaceType(RoomType.load(cmd.placeTypeId))
         }
         form.save(flush: true)
@@ -92,7 +92,7 @@ join r.placeType tp
     def getFormForCreate() {
         return [
                 form: [],
-                departments: departmentService.allDepartments,
+                departments: Dept.findAll("from Dept order by name"),
                 seatTypes: SeatType.findAll("from SeatType order by name"),
                 purposes: Purpose.all,
                 placeTypes: RoomType.findAll("from RoomType where id < 33 or id > 37 order by level1,level2"),
