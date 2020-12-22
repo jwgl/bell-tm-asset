@@ -1,5 +1,6 @@
 package cn.edu.bnuz.bell.asset
 
+import cn.edu.bnuz.bell.asset.stateMachine.Event
 import cn.edu.bnuz.bell.http.BadRequestException
 import cn.edu.bnuz.bell.http.NotFoundException
 import cn.edu.bnuz.bell.organization.Teacher
@@ -16,6 +17,7 @@ import java.time.LocalDate
 @Transactional
 class ReceiptFormService {
     SecurityService securityService
+    LogService logService
 
     @Resource(name='receiptReviewStateMachine')
     DomainStateMachineHandler domainStateMachineHandler
@@ -44,21 +46,6 @@ order by r.dateCheckIn desc
                 assetTypes: ReceiptItem.executeQuery("select distinct new map(r.assetType as name, r.assetType as value) from ReceiptItem r order by r.assetType"),
                 suppliers: Supplier.executeQuery("select new map(s.id as id, s.name as name )from Supplier s order by s.name")
         ]
-    }
-
-    def findModels(String q) {
-        AssetModel.executeQuery'''
-select new map(
-    am.id as id,
-    am.name as name,
-    am.brand as brand,
-    am.specs as specs,
-    am.parameter as parameter
-)
-from AssetModel am
-where am.name like :q or am.brand like :q or am.specs like :q
-order by am.name, am.brand
-''', [q: "%${q}%"]
     }
 
     def create(ReceiptFormCommand cmd) {
@@ -230,6 +217,15 @@ where ri.receipt.id = :formId
             throw new BadRequestException()
         }
         domainStateMachineHandler.submit(form, securityService.userId, cmd.to, cmd.comment, cmd.title)
+        logService.log('入库', "申请入库#${form.id}", null, null)
         form.save()
+    }
+
+    def delete(Long id) {
+        Receipt form = Receipt.load((id))
+        if (!form) {
+            throw new BadHttpRequest()
+        }
+        form.delete()
     }
 }

@@ -58,4 +58,37 @@ left join a.supplier s
     def getStates() {
         Asset.executeQuery("select distinct new map(state as name, state as value) from Asset order by state")
     }
+
+    /**
+     * 粘贴板式的导入
+     */
+    def update(String data) {
+        // 报错列表
+        def error = new ArrayList<String>()
+        def success = 0
+        def rows = data.split("\n")
+        if (rows.length) {
+            rows.eachWithIndex {String row, int index ->
+                def cells = row.split("\t")
+                Asset asset = Asset.load(cells[0])
+                if (!asset) {
+                    error.add("第${index + 1}行，id${cells[0]}不存在！")
+                } else {
+                    success ++
+                    if (asset.code) {
+                        error.add("第${index + 1}行，id${cells[0]}资产编号已存在！")
+                    } else {
+                        asset.setCode(cells[1])
+                    }
+                    if (asset.sn) {
+                        error.add("第${index + 1}行，id${cells[0]}序列号已存在！")
+                    } else {
+                        asset.setSn(cells[2])
+                    }
+                    asset.save()
+                }
+            }
+        }
+        return [error: error, success: success]
+    }
 }

@@ -57,4 +57,11 @@ class ReceiptFormController {
     def approvers() {
         renderJson assetReviewerService.approvers
     }
+
+    /**
+     * 删除
+     */
+    def delete(Long id) {
+        receiptFormService.delete(id)
+    }
 }

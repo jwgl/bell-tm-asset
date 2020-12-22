@@ -1,7 +1,5 @@
 package cn.edu.bnuz.bell.asset
 
-import cn.edu.bnuz.bell.organization.Department
-import cn.edu.bnuz.bell.orm.PostgreSQLStringArrayUserType
 
 class Room {
 
@@ -43,7 +41,7 @@ class Room {
     /**
      * 使用部门
      */
-    Department department
+    Dept department
 
     /**
      * 场地类别
@@ -63,7 +61,7 @@ class Room {
         building    type: 'text', comment: '教学楼'
         seat        comment: '座位数'
         measure     comment: '面积'
-        status      comment: '状态'
+        status      type: 'text', comment: '状态'
         seatType    type: 'text', comment: '桌椅类型'
         placeType   comment: '场地类别'
         purpose     type: 'text', comment: '功能'

@@ -1,6 +1,8 @@
 package cn.edu.bnuz.bell.asset
 
 class RoomCommand {
+    Long id
+
     /**
      * 场地名称
      */
@@ -39,7 +41,7 @@ class RoomCommand {
     /**
      * 使用部门
      */
-    String departmentId
+    Long departmentId
 
     /**
      * 场地类别

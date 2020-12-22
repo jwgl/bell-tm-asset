@@ -6,9 +6,14 @@ import org.springframework.security.access.prepost.PreAuthorize
 @PreAuthorize('hasRole("ROLE_ASSET_BUILDING_ADMIN")')
 class AreaController {
 
-    AssetCenterService assetCenterService
+    AreaService areaService
+
 
     def index(AssetOptionCommand cmd) {
-        renderJson assetCenterService.list(cmd)
+        renderJson areaService.list(cmd)
+    }
+
+    def show(Long id) {
+        renderJson areaService.getFormInfo(id)
     }
 }

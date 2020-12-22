@@ -42,4 +42,11 @@ class TransferFormController {
     def approvers() {
         renderJson assetReviewerService.checkers
     }
+
+    /**
+     * 删除
+     */
+    def delete(Long id) {
+        transferFormService.delete(id)
+    }
 }

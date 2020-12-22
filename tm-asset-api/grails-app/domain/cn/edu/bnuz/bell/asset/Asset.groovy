@@ -143,12 +143,22 @@ class Asset {
         name nullable: true
     }
 
-    Boolean canAction(Event event) {
+    Boolean canAction(Event event, Status statusByRoom) {
         switch (state) {
             case Status.STANDBY:
-                return event in ([Event.CHECKOUT, Event.FORBID, Event.LOSE, Event.REPAIR, Event.ALLOT] as Set<Event>)
+                switch (event) {
+                    case Event.CHECKOUT:
+                        return statusByRoom in ([Status.STANDBY , Status.USING] as Set<Status>)
+                    case Event.STOP:
+                    case Event.ALLOT:
+                        return statusByRoom == Status.STANDBY
+                    default:
+                        return event in ([Event.FORBID, Event.LOSE, Event.REPAIR] as Set<Event>)
+                }
+                break
             case Status.USING:
-                return event in ([Event.STOP, Event.TRANSFER] as Set<Event>)
+                return (event == Event.STOP && statusByRoom == Status.STANDBY) ||
+                        (event == Event.TRANSFER && statusByRoom in ([Status.STANDBY , Status.USING] as Set<Status>))
             case Status.REPAIRING:
                 return event ==  Event.FIX
             case Status.OFF:
@@ -159,43 +169,5 @@ class Asset {
                 return false
         }
     }
-
-    Status passAction(Event event) {
-        if (canAction(event)) {
-            switch (state) {
-                case Status.STANDBY:
-                    switch (event) {
-                        case Event.CHECKOUT:
-                            return Status.USING
-                        case Event.FORBID:
-                            return Status.OFF
-                        case Event.LOSE:
-                            return Status.LOST
-                        case Event.REPAIR:
-                            return Status.REPAIRING
-                        case Event.ALLOT:
-                            return Status.STANDBY
-                    }
-                    break
-                case Status.USING:
-                    switch (event) {
-                        case Event.STOP:
-                            return Status.STANDBY
-                        case Event.TRANSFER:
-                            return Status.USING
-                    }
-                    break
-                case Status.REPAIRING:
-                    return Status.STANDBY
-                case Status.OFF:
-                    return Status.CLEARANCE
-                case Status.LOST:
-                    return Status.CLEARANCE
-            }
-        } else {
-            return state
-        }
-    }
-
 
 }

@@ -1,13 +1,18 @@
 package cn.edu.bnuz.bell.asset
 
+import cn.edu.bnuz.bell.asset.stateMachine.Event
 import cn.edu.bnuz.bell.organization.Department
 import cn.edu.bnuz.bell.organization.DepartmentService
+import cn.edu.bnuz.bell.security.SecurityService
+import grails.converters.JSON
 import grails.gorm.transactions.Transactional
 import javassist.tools.web.BadHttpRequest
 
 @Transactional
 class PlaceService {
+    SecurityService securityService
     DepartmentService departmentService
+    LogService logService
 
     def list(RoomOptionCommand cmd) {
         def sqlStr = '''
@@ -45,7 +50,7 @@ join r.placeType tp
                 purpose: cmd.purpose,
                 note: cmd.note,
                 seatType: cmd.seatType,
-                department: Department.load(cmd.departmentId),
+                department: Dept.load(cmd.departmentId),
                 placeType: RoomType.load(cmd.placeTypeId)
         )
         if (!form.save()){
@@ -56,13 +61,41 @@ join r.placeType tp
         return form
     }
 
+    def update(RoomCommand cmd) {
+        Room form = Room.load(cmd.id)
+        Map change = [
+                from: [
+                    seat: form.seat,
+                    measure: form.measure
+                ],
+                to: [
+                    seat: cmd.seat,
+                    measure: cmd.measure
+                ]
+        ]
+        logService.log('UPDATE', "${change as JSON}", form, null)
+        form.setSeat(cmd.seat)
+        form.setMeasure(cmd.measure)
+        if (securityService.hasPermission('PERM_ASSET_PLACE_WRITE')) {
+            form.setName(cmd.name)
+            form.setBuilding(cmd.building)
+            form.setStatus(cmd.status)
+            form.setPurpose(cmd.purpose)
+            form.setNote(cmd.note)
+            form.setSeatType(cmd.seatType)
+            form.setDepartment(Dept.load(cmd.departmentId))
+            form.setPlaceType(RoomType.load(cmd.placeTypeId))
+        }
+        form.save(flush: true)
+    }
+
     def getFormForCreate() {
         return [
                 form: [],
-                departments: departmentService.allDepartments,
+                departments: Dept.findAll("from Dept order by name"),
                 seatTypes: SeatType.findAll("from SeatType order by name"),
                 purposes: Purpose.all,
-                placeTypes: RoomType.findAll("from RoomType order by level1,level2"),
+                placeTypes: RoomType.findAll("from RoomType where id < 33 or id > 37 order by level1,level2"),
                 buildings: buildings
         ]
     }
@@ -92,6 +125,7 @@ where r.id = :id
     }
 
     def getFormForEdit(Long id) {
+        // 保留id在100以内的房间为特殊房间，不能编辑
         def result = Room.executeQuery'''
 select new map(
 r.id as id,
@@ -111,7 +145,7 @@ tp.id as placeTypeId
 from Room r
 join r.department d
 join r.placeType tp
-where r.id = :id
+where r.id = :id and r.id >100
 ''', [id: id]
         if (result) {
             return [
@@ -139,5 +173,14 @@ building as building,
 name as name,
 name as value
 ) from Room order by name'''
+    }
+
+    def delete(Long id) {
+        Room room = Room.load((id))
+        if (!room) {
+            throw new BadHttpRequest()
+        }
+        logService.log('DELETE', "${room as JSON}", null, null)
+        room.delete()
     }
 }
