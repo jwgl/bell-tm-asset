@@ -1,7 +1,5 @@
 package cn.edu.bnuz.bell.asset
 
-import cn.edu.bnuz.bell.asset.stateMachine.Event
-import cn.edu.bnuz.bell.organization.Department
 import cn.edu.bnuz.bell.organization.DepartmentService
 import cn.edu.bnuz.bell.security.SecurityService
 import grails.converters.JSON
@@ -33,9 +31,10 @@ tp.level2 as roomType
 from Room r
 join r.department d
 join r.placeType tp
+where r.id not between 2 and 5
 '''
         if (!cmd.criterion.isEmpty()) {
-            sqlStr += " where ${cmd.criterion} order by r.building, r.name"
+            sqlStr += " ${cmd.criterion} order by r.building, r.name"
         }
         Room.executeQuery sqlStr, cmd.args
     }
@@ -172,7 +171,10 @@ id as id,
 building as building,
 name as name,
 name as value
-) from Room order by name'''
+)
+from Room 
+where not id between 2 and 5
+order by name'''
     }
 
     def delete(Long id) {

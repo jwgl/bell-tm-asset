@@ -1,5 +1,6 @@
 package cn.edu.bnuz.bell.asset
 
+import cn.edu.bnuz.bell.asset.stateMachine.Event
 import cn.edu.bnuz.bell.asset.stateMachine.Status
 import cn.edu.bnuz.bell.http.BadRequestException
 import cn.edu.bnuz.bell.http.NotFoundException
@@ -58,10 +59,8 @@ where o.id = :userId
         )
         cmd.addedItems.each { item ->
             Asset asset = Asset.load(item.id)
-            if (type.action == 'TRANSFER') {
-                asset.setRoom(toPlace)
-                asset.setState(toPlace.placeType.state as Status)
-                asset.save()
+            if (!asset.canAction(type.action as Event, toPlace.placeType.state as Status)) {
+                throw new BadRequestException('非法操作！')
             }
             TransferItem transferItem = new TransferItem(
                     asset: asset,
@@ -70,6 +69,11 @@ where o.id = :userId
                     state: asset.state
             )
             form.addToItems(transferItem)
+            if (type.action == 'TRANSFER') {
+                asset.setRoom(toPlace)
+                asset.setState(toPlace.placeType.state as Status)
+                asset.save()
+            }
         }
         if (!form.save()) {
             form.errors.each {

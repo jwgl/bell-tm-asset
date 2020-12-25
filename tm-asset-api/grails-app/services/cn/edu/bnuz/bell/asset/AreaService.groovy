@@ -2,7 +2,6 @@ package cn.edu.bnuz.bell.asset
 
 import cn.edu.bnuz.bell.organization.Teacher
 import cn.edu.bnuz.bell.security.SecurityService
-import cn.edu.bnuz.bell.security.User
 import grails.gorm.transactions.Transactional
 
 @Transactional
@@ -38,6 +37,7 @@ left join a.room r
 left join a.supplier s
 where 
 (r.building in :areas or r.id = 1)
+and not (r.id between 2 and 5)
 and not exists(select tf.id from TransferItem ti join ti.transferForm tf where tf.status in ('CREATED', 'SUBMITTED') and ti.asset.id = a.id)
 '''
         if (!cmd.criterion.isEmpty()) {
@@ -78,8 +78,10 @@ from UserArea where user = :user''', [user: Teacher.load(securityService.userId)
         Room.executeQuery'''
 select distinct new map(id as id, building as building, name as name, name as value)
 from Room
-where building in :buildings or id = 6
-order by name''', [buildings: areas]
+where (building in :buildings and not (id between 2 and 5))
+or id = 1
+order by name
+''', [buildings: areas]
     }
 
     def getAreas() {
