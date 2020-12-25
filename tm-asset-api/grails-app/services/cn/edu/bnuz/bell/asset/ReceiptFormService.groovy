@@ -1,6 +1,5 @@
 package cn.edu.bnuz.bell.asset
 
-import cn.edu.bnuz.bell.asset.stateMachine.Event
 import cn.edu.bnuz.bell.http.BadRequestException
 import cn.edu.bnuz.bell.http.NotFoundException
 import cn.edu.bnuz.bell.organization.Teacher
@@ -18,6 +17,7 @@ import java.time.LocalDate
 class ReceiptFormService {
     SecurityService securityService
     LogService logService
+    AssetModelService assetModelService
 
     @Resource(name='receiptReviewStateMachine')
     DomainStateMachineHandler domainStateMachineHandler
@@ -44,7 +44,8 @@ order by r.dateCheckIn desc
         return [
                 form: [],
                 assetTypes: ReceiptItem.executeQuery("select distinct new map(r.assetType as name, r.assetType as value) from ReceiptItem r order by r.assetType"),
-                suppliers: Supplier.executeQuery("select new map(s.id as id, s.name as name )from Supplier s order by s.name")
+                suppliers: Supplier.executeQuery("select new map(s.id as id, s.name as name )from Supplier s order by s.name"),
+                assetNames: assetModelService.names
         ]
     }
 

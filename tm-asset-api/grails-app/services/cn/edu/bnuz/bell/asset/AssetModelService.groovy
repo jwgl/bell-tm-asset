@@ -43,4 +43,8 @@ order by am.name, am.brand
         )
         form.save()
     }
+
+    def getNames() {
+        AssetModel.executeQuery('select distinct new map(name as name, name as value) from AssetModel order by name')
+    }
 }

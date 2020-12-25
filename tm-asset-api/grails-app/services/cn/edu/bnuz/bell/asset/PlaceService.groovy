@@ -1,7 +1,5 @@
 package cn.edu.bnuz.bell.asset
 
-import cn.edu.bnuz.bell.asset.stateMachine.Event
-import cn.edu.bnuz.bell.organization.Department
 import cn.edu.bnuz.bell.organization.DepartmentService
 import cn.edu.bnuz.bell.security.SecurityService
 import grails.converters.JSON

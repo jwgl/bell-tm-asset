@@ -21,6 +21,7 @@ class UrlMappings {
             "/transferApprovals"(resources: 'transferApproval', includes:['index']) {
                 "/workitems"(resources: 'transferApproval', includes: ['show', 'patch'])
             }
+            "/userAreas"(resources: 'userArea')
         }
 
         "/models"(resources: 'model', include: ['index', 'save'])

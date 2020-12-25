@@ -85,6 +85,13 @@ left join a.supplier s
                     } else {
                         asset.setSn(cells[2])
                     }
+                    if (asset.price > 0) {
+                        error.add("第${index + 1}行，id${cells[0]}单价已存在！")
+                    } else {
+                        if (cells.length >= 4) {
+                            asset.setPrice(cells[3] as BigDecimal)
+                        }
+                    }
                     asset.save()
                 }
             }

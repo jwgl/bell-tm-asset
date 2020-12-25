@@ -38,6 +38,7 @@ left join a.room r
 left join a.supplier s
 where 
 (r.building in :areas or r.id = 1)
+and not (r.id between 2 and 5)
 and not exists(select tf.id from TransferItem ti join ti.transferForm tf where tf.status in ('CREATED', 'SUBMITTED') and ti.asset.id = a.id)
 '''
         if (!cmd.criterion.isEmpty()) {
