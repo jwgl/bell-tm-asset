@@ -34,7 +34,7 @@ join r.placeType tp
 where r.id not between 2 and 5
 '''
         if (!cmd.criterion.isEmpty()) {
-            sqlStr += " ${cmd.criterion} order by r.building, r.name"
+            sqlStr += " and ${cmd.criterion} order by r.building, r.name"
         }
         Room.executeQuery sqlStr, cmd.args
     }
