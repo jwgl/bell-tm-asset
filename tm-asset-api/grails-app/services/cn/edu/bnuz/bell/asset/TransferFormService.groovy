@@ -59,7 +59,7 @@ where o.id = :userId
         )
         cmd.addedItems.each { item ->
             Asset asset = Asset.load(item.id)
-            if (!asset.canAction(type.action as Event, toPlace.placeType.state as Status)) {
+            if (toPlace.status == 'DELETED' || !asset.canAction(type.action as Event, toPlace.placeType.state as Status)) {
                 throw new BadRequestException('非法操作！')
             }
             TransferItem transferItem = new TransferItem(

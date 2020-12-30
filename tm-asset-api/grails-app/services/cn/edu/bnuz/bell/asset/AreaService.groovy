@@ -78,7 +78,9 @@ from UserArea where user = :user''', [user: Teacher.load(securityService.userId)
         Room.executeQuery'''
 select distinct new map(id as id, building as building, name as name, name as value)
 from Room
-where (building in :buildings and not (id between 2 and 5))
+where (building in :buildings
+and not (id between 2 and 5)
+and status <> 'DELETED')
 or id = 1
 order by name
 ''', [buildings: areas]
