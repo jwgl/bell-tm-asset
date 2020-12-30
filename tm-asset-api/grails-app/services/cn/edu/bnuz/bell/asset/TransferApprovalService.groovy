@@ -136,7 +136,8 @@ order by tf.dateSubmitted desc
         transferForm.approver = Teacher.load(userId)
         transferForm.dateApproved = LocalDate.now()
         transferForm.items.each { item ->
-            if (!item.asset.canAction(transferForm.transferType.action as Event, transferForm.toPlace.placeType.state as Status)) {
+            if (transferForm.toPlace.status == 'DELETED' ||
+            !item.asset.canAction(transferForm.transferType.action as Event, transferForm.toPlace.placeType.state as Status)) {
                 throw new BadRequestException("设备当前状态不允许${transferForm.transferType.name}或不可以流转到目标房间")
             }
             item.asset.state =  transferForm.toPlace.placeType.state as Status
