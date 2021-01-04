@@ -9,7 +9,6 @@ class AssetCenterController {
     AssetCenterService assetCenterService
     ReceiptFormService receiptFormService
     AreaService areaService
-    AssetModelService assetModelService
 
     def index(AssetOptionCommand cmd) {
         renderJson assetCenterService.list(cmd)
@@ -20,7 +19,7 @@ class AssetCenterController {
      */
     def save() {
         String data = request.JSON['data']
-        renderJson assetCenterService.update(data)
+        renderJson assetCenterService.batchUpdate(data)
     }
 
     def show(Long id) {
@@ -28,8 +27,15 @@ class AssetCenterController {
         if (!formInfoForUpdate) {
             throw new BadRequestException()
         }
-        formInfoForUpdate['assetModels'] = assetModelService.list()
-        formInfoForUpdate['supplies'] = receiptFormService.supplies
+        formInfoForUpdate['suppliers'] = receiptFormService.supplies
         renderJson(formInfoForUpdate)
+    }
+
+    def update(Long id) {
+        AssetCommand cmd = new AssetCommand()
+        bindData(cmd, request.JSON)
+        cmd.id = id
+        assetCenterService.update(cmd)
+        renderOk()
     }
 }

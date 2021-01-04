@@ -47,4 +47,19 @@ order by am.name, am.brand
     def getNames() {
         AssetModel.executeQuery('select distinct new map(name as name, name as value) from AssetModel order by name')
     }
+
+    def getFormInfo(Long id) {
+        def result = AssetModel.executeQuery'''
+select new map(
+    am.id as id,
+    am.name as name,
+    am.brand as brand,
+    am.specs as specs,
+    am.parameter as parameter
+)
+from AssetModel am
+where am.id = :id
+''', [id: id]
+        return result ? result[0] : [:]
+    }
 }

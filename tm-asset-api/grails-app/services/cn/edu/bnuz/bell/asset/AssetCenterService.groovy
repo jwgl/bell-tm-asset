@@ -2,12 +2,16 @@ package cn.edu.bnuz.bell.asset
 
 import cn.edu.bnuz.bell.security.SecurityService
 import cn.edu.bnuz.bell.security.User
+import grails.converters.JSON
 import grails.gorm.transactions.Transactional
+
+import java.time.LocalDate
 
 @Transactional
 class AssetCenterService {
     PlaceService placeService
     SecurityService securityService
+    LogService logService
 
     def list(AssetOptionCommand cmd) {
         def sqlStr = '''
@@ -27,6 +31,7 @@ select new map(
     s.name as supplier,
     r.building as building,
     r.name as place,
+    t.level2 as placeType,
     m.id as assetModelId,
     m.brand as brand,
     m.specs as specs,
@@ -35,6 +40,7 @@ select new map(
 from Asset a
 left join a.assetModel m
 left join a.room r
+left join r.placeType t
 left join a.supplier s
 '''
         if (!cmd.criterion.isEmpty()) {
@@ -62,7 +68,7 @@ left join a.supplier s
     /**
      * 粘贴板式的导入
      */
-    def update(String data) {
+    def batchUpdate(String data) {
         // 报错列表
         def error = new ArrayList<String>()
         def success = 0
@@ -97,5 +103,35 @@ left join a.supplier s
             }
         }
         return [error: error, success: success]
+    }
+
+    def update(AssetCommand cmd) {
+        Asset asset = Asset.load(cmd.id)
+        if (asset) {
+            AssetChangeLog assetChangeLog = new AssetChangeLog(
+                    asset: asset,
+                    fromValue: ([
+                            assetModelId: asset.assetModelId,
+                            supplier: asset.supplier,
+                            price: asset.price,
+                            dateBought: asset.dateBought,
+                            note: asset.note
+                            ] as JSON).toString(),
+                    toValue: "${cmd as JSON}",
+                    dateCreated: new Date()
+            )
+            if (!assetChangeLog.save()) {
+                assetChangeLog.errors.each {
+                    println it
+                }
+            }
+            asset.setAssetModel(AssetModel.load(cmd.assetModelId))
+            asset.setSupplier(cmd.supplierId ? Supplier.load(cmd.supplierId) : null)
+            asset.setPrice(cmd.price)
+            asset.setDateBought(cmd.dateBought ? LocalDate.parse(cmd.dateBought) : null)
+            asset.setNote(cmd.note)
+            asset.save(flush: true)
+            logService.log('UPDATE', null, asset.room, asset)
+        }
     }
 }

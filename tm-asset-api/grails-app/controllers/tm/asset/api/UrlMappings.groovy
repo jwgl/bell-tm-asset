@@ -25,6 +25,7 @@ class UrlMappings {
         }
 
         "/models"(resources: 'model', include: ['index', 'save'])
+        "/output"(resources: 'output', include: ['index'])
 
         "500"(view: '/error')
         "404"(view: '/notFound')
