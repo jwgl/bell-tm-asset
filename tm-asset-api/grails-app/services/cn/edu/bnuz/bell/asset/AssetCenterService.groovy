@@ -118,6 +118,7 @@ left join a.supplier s
                             note: asset.note
                             ] as JSON).toString(),
                     toValue: "${cmd as JSON}",
+                    sake: cmd.sake,
                     dateCreated: new Date()
             )
             if (!assetChangeLog.save()) {

@@ -7,4 +7,5 @@ class AssetCommand {
     BigDecimal price
     String dateBought
     String note
+    String sake
 }

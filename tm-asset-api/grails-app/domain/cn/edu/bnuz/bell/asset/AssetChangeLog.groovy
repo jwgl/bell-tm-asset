@@ -16,6 +16,11 @@ class AssetChangeLog {
      */
     Date dateCreated
 
+    /**
+     * 变更原因
+     */
+    String sake
+
     static belongsTo = [asset: Asset]
 
     static mapping = {
@@ -25,5 +30,10 @@ class AssetChangeLog {
         fromValue type: 'text', comment: '原值JSON'
         toValue type: 'text', comment: '新值JSON'
         dateCreated comment: '产生时间'
+        sake type: 'text', comment: '变更原因'
+    }
+
+    static constraints = {
+        sake nullable: true
     }
 }

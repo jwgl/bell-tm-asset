@@ -147,6 +147,7 @@ where a.id = :id
                     modelTo: to.assetModelId ? assetModelService.getFormInfo(to.assetModelId) : [:],
                     otherTo: to,
                     supplierTo: to.supplierId ? Supplier.load(to.supplierId)?.name : null,
+                    sake: item.sake,
                     dateCreated: item.dateCreated
             ]
         }
