@@ -9,6 +9,7 @@ class UserArea {
     static mapping = {
         comment '楼区管理员表'
         table schema: 'tm_asset'
+        id generator: 'identity', comment: 'ID'
         user comment: '用户'
         building comment: '管理的楼区'
     }

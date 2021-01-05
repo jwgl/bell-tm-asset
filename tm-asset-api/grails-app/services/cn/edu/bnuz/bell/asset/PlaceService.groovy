@@ -149,7 +149,7 @@ where r.id = :id and r.id >100
         if (result) {
             return [
                     form: result[0],
-                    departments: departmentService.allDepartments,
+                    departments: Dept.findAll("from Dept order by name"),
                     seatTypes: SeatType.all,
                     purposes: Purpose.all,
                     placeTypes: RoomType.all,

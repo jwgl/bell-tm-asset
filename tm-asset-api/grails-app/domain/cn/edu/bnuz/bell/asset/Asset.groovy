@@ -1,6 +1,7 @@
 package cn.edu.bnuz.bell.asset
 
 import cn.edu.bnuz.bell.asset.stateMachine.*
+import cn.edu.bnuz.bell.organization.Teacher
 
 import java.time.LocalDate
 
@@ -101,6 +102,16 @@ class Asset {
      */
     Room room
 
+    /**
+     * 删除操作人
+     */
+    Teacher deleter
+
+    /**
+     * 删除时间
+     */
+    Date dateDeleted
+
     static mapping = {
         comment '资产'
         table schema: 'tm_asset'
@@ -124,6 +135,8 @@ class Asset {
         note type: 'text', comment: '备注'
         receipt comment: '原入库单'
         room comment: '所在场地'
+        deleter comment: '删除操作人'
+        dateDeleted comment: '删除时间'
     }
 
     static constraints = {
@@ -141,6 +154,8 @@ class Asset {
         receipt nullable: true
         room nullable: true
         name nullable: true
+        deleter nullable: true
+        dateDeleted nullable: true
     }
 
     Boolean canAction(Event event, Status statusByRoom) {

@@ -165,7 +165,7 @@ where ri.receipt.id = :formId
             return [
                     form: form,
                     assetTypes: ReceiptItem.executeQuery("select distinct new map(r.assetType as name, r.assetType as value) from ReceiptItem r order by r.assetType"),
-                    suppliers: Supplier.executeQuery("select new map(s.id as id, s.name as name )from Supplier s order by s.name")
+                    suppliers: supplies
             ]
         } else {
             throw new BadHttpRequest()
@@ -228,5 +228,9 @@ where ri.receipt.id = :formId
             throw new BadHttpRequest()
         }
         form.delete()
+    }
+
+    def getSupplies() {
+        Supplier.executeQuery("select new map(s.id as id, s.name as name )from Supplier s order by s.name")
     }
 }

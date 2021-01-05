@@ -2,11 +2,13 @@ package cn.edu.bnuz.bell.asset
 
 import cn.edu.bnuz.bell.organization.Teacher
 import cn.edu.bnuz.bell.security.SecurityService
+import grails.converters.JSON
 import grails.gorm.transactions.Transactional
 
 @Transactional
 class AreaService {
     SecurityService securityService
+    AssetModelService assetModelService
 
     def list(AssetOptionCommand cmd) {
         def sqlStr = '''
@@ -104,9 +106,12 @@ a.id as id,
     a.unit as unit,
     a.pcs as pcs,
     a.note as note,
+    a.price as price,
     s.name as supplier,
+    s.id as supplierId,
     r.building as building,
     r.name as place,
+    t.level2 as placeType,
     m.id as assetModelId,
     m.brand as brand,
     m.specs as specs,
@@ -116,8 +121,36 @@ from Asset a
 left join a.assetModel m
 left join a.supplier s
 left join a.room r
+left join r.placeType t
 where a.id = :id
 ''', [id: id]
-        return result ? [form: result[0]] : [form: []]
+        if (result) {
+            if (!securityService.hasRole('ROLE_ASSET_CENTER_ADMIN')) {
+                result[0]['price'] = null
+            }
+            return [form: result[0], changeLogs: getChangeLogs(id)]
+        } else {
+            return [form: []]
+        }
+    }
+
+    def getChangeLogs(Long assetId) {
+        def logs = AssetChangeLog.findAllByAsset(Asset.load(assetId))
+        def result = []
+        logs.each { item ->
+            def from = JSON.parse(item.fromValue)
+            def to = JSON.parse(item.toValue)
+            result += [
+                    modelFrom: from.assetModelId ? assetModelService.getFormInfo(from.assetModelId) : [:],
+                    otherFrom: from,
+                    supplierFrom: from.supplierId ? Supplier.load(from.supplierId)?.name : null,
+                    modelTo: to.assetModelId ? assetModelService.getFormInfo(to.assetModelId) : [:],
+                    otherTo: to,
+                    supplierTo: to.supplierId ? Supplier.load(to.supplierId)?.name : null,
+                    sake: item.sake,
+                    dateCreated: item.dateCreated
+            ]
+        }
+        return result
     }
 }
