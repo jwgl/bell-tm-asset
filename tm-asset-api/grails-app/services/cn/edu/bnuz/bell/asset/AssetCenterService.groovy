@@ -112,7 +112,7 @@ left join a.supplier s
                     asset: asset,
                     fromValue: ([
                             assetModelId: asset.assetModelId,
-                            supplier: asset.supplier,
+                            supplierId: asset.supplierId,
                             price: asset.price,
                             dateBought: asset.dateBought,
                             note: asset.note
