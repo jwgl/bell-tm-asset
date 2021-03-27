@@ -165,7 +165,8 @@ where ri.receipt.id = :formId
             return [
                     form: form,
                     assetTypes: ReceiptItem.executeQuery("select distinct new map(r.assetType as name, r.assetType as value) from ReceiptItem r order by r.assetType"),
-                    suppliers: supplies
+                    suppliers: supplies,
+                    assetNames: assetModelService.names
             ]
         } else {
             throw new BadHttpRequest()
@@ -174,7 +175,7 @@ where ri.receipt.id = :formId
 
     def update(ReceiptFormCommand cmd) {
         def form = Receipt.load(cmd.id)
-        if (form && form.status == State.CREATED) {
+        if (form && domainStateMachineHandler.canUpdate(form)) {
             form.note = cmd.note
             def oldItems = ReceiptItem.findAllByReceipt(form)
             oldItems.each {

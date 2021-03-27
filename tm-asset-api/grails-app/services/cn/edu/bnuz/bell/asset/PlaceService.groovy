@@ -62,17 +62,30 @@ where r.id not between 2 and 5
 
     def update(RoomCommand cmd) {
         Room form = Room.load(cmd.id)
-        Map change = [
-                from: [
-                    seat: form.seat,
-                    measure: form.measure
-                ],
-                to: [
-                    seat: cmd.seat,
-                    measure: cmd.measure
-                ]
-        ]
-        logService.log('UPDATE', "${change as JSON}", form, null)
+        cmd.department = Dept.get(cmd.departmentId)?.name
+        cmd.placeType = RoomType.get(cmd.placeTypeId)?.level2
+        PlaceChangeLog placeChangeLog = new PlaceChangeLog(
+                place: form,
+                fromValue: ([
+                        seat: form.seat,
+                        measure: form.measure,
+                        name: form.name,
+                        building: form.building,
+                        status: form.status,
+                        purpose: form.purpose,
+                        note: form.note,
+                        seatType: form.seatType,
+                        department: form.department.name,
+                        placeType: form.placeType.level2
+                ] as JSON).toString(),
+                toValue: "${cmd as JSON}",
+                dateCreated: new Date()
+        )
+        if (!placeChangeLog.save()) {
+            placeChangeLog.errors.each {
+                println it
+            }
+        }
         form.setSeat(cmd.seat)
         form.setMeasure(cmd.measure)
         if (securityService.hasPermission('PERM_ASSET_PLACE_WRITE')) {
@@ -86,6 +99,7 @@ where r.id not between 2 and 5
             form.setPlaceType(RoomType.load(cmd.placeTypeId))
         }
         form.save(flush: true)
+        logService.log('UPDATE', '变更场地信息', form, null)
     }
 
     def getFormForCreate() {
@@ -120,7 +134,12 @@ join r.department d
 join r.placeType tp
 where r.id = :id
 ''', [id: id]
-        return result ? result[0] : null
+        if (result) {
+            result[0]['logs'] = PlaceChangeLog.findAllByPlace(Room.load(id), [sort: 'dateCreated', order: 'asc'])
+            return result[0]
+        } else {
+            return null
+        }
     }
 
     def getFormForEdit(Long id) {

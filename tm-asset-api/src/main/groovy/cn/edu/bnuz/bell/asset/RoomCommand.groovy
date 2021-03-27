@@ -52,4 +52,7 @@ class RoomCommand {
      * 备注
      */
     String note
+
+    String department
+    String placeType
 }

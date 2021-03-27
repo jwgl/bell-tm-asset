@@ -1,5 +1,6 @@
 package cn.edu.bnuz.bell.asset
 
+import cn.edu.bnuz.bell.http.BadRequestException
 import cn.edu.bnuz.bell.security.SecurityService
 import cn.edu.bnuz.bell.security.User
 import grails.converters.JSON
@@ -74,28 +75,37 @@ left join a.supplier s
         def success = 0
         def rows = data.split("\n")
         if (rows.length) {
+            Map ths = [:]
             rows.eachWithIndex {String row, int index ->
                 def cells = row.split("\t")
-                Asset asset = Asset.load(cells[0])
-                if (!asset) {
-                    error.add("第${index + 1}行，id${cells[0]}不存在！")
-                } else {
-                    success ++
-                    if (asset.code) {
-                        error.add("第${index + 1}行，id${cells[0]}资产编号已存在！")
+                if (index == 0) {
+                    ths = findIndex(cells)
+                } else if (ths.id != -1) {
+                    Asset asset = Asset.load(cells[ths.id] as Long)
+                    if (!asset) {
+                        error.add("第${index + 1}行，id${cells[ths.id]}不存在！")
                     } else {
-                        asset.setCode(cells[1])
-                    }
-                    if (asset.sn) {
-                        error.add("第${index + 1}行，id${cells[0]}序列号已存在！")
-                    } else {
-                        asset.setSn(cells[2])
-                    }
-                    if (asset.price > 0) {
-                        error.add("第${index + 1}行，id${cells[0]}单价已存在！")
-                    } else {
-                        if (cells.length >= 4) {
-                            asset.setPrice(cells[3] as BigDecimal)
+                        success++
+                        if (ths.code != -1) {
+                            if (asset.code) {
+                                error.add("第${index + 1}行，id${cells[ths.id]}资产编号已存在！")
+                            } else {
+                                asset.setCode(cells[ths.code])
+                            }
+                        }
+                        if (ths.sn != -1) {
+                            if (asset.sn) {
+                                error.add("第${index + 1}行，id${cells[ths.id]}序列号已存在！")
+                            } else {
+                                asset.setSn(cells[ths.sn])
+                            }
+                        }
+                        if (ths.price != -1) {
+                            if (asset.price > 0) {
+                                error.add("第${index + 1}行，id${cells[ths.id]}单价已存在！")
+                            } else {
+                                asset.setPrice(cells[ths.price] as BigDecimal)
+                            }
                         }
                     }
                     asset.save()
@@ -132,7 +142,26 @@ left join a.supplier s
             asset.setDateBought(cmd.dateBought ? LocalDate.parse(cmd.dateBought) : null)
             asset.setNote(cmd.note)
             asset.save(flush: true)
-            logService.log('UPDATE', null, asset.room, asset)
+            logService.log('UPDATE', '设备信息变更', asset.room, asset)
         }
+    }
+
+    Map findIndex(def headers) {
+        def colIndex = [id: -1, code: -1, sn: -1, price: -1]
+        headers.eachWithIndex{ name, int index ->
+            switch (name?.toLowerCase()) {
+                case 'id': colIndex.id = index
+                    break
+                case '资产编号': colIndex.code = index
+                    break
+                case '设备序列号': colIndex.sn = index
+                    break
+                case '单价': colIndex.price = index
+                    break
+                default:
+                    throw new BadRequestException('存在不认识的列，请按要求标注列名！')
+            }
+        }
+        return colIndex
     }
 }
