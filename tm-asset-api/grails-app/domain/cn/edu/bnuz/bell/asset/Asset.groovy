@@ -156,6 +156,7 @@ class Asset {
         name nullable: true
         deleter nullable: true
         dateDeleted nullable: true
+        assetModel nullable: true
     }
 
     Boolean canAction(Event event, Status statusByRoom) {
