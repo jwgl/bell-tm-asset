@@ -95,7 +95,7 @@ order by name
     def getFormInfo(Long id) {
         def result = Asset.executeQuery'''
 select new map(
-a.id as id,
+    a.id as id,
     a.sn as sn,
     a.code as code,
     a.name as name,

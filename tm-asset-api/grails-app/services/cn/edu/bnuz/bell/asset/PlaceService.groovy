@@ -9,7 +9,6 @@ import javassist.tools.web.BadHttpRequest
 @Transactional
 class PlaceService {
     SecurityService securityService
-    DepartmentService departmentService
     LogService logService
 
     def list(RoomOptionCommand cmd) {
@@ -172,7 +171,8 @@ where r.id = :id and r.id >100
                     seatTypes: SeatType.all,
                     purposes: Purpose.all,
                     placeTypes: RoomType.all,
-                    buildings: buildings
+                    buildings: buildings,
+                    deleteAble: !hasAsset(id)
             ]
         } else {
             throw new BadHttpRequest()
@@ -198,10 +198,14 @@ order by name'''
 
     def delete(Long id) {
         Room room = Room.load((id))
-        if (!room) {
+        if (!room || !hasAsset(id)) {
             throw new BadHttpRequest()
         }
         logService.log('DELETE', "${room as JSON}", null, null)
         room.delete()
+    }
+
+    Boolean hasAsset(Long id) {
+        Asset.countByRoom(Room.load(id))
     }
 }
