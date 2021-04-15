@@ -4,17 +4,8 @@ import grails.validation.Validateable
 
 class DownloadCommand implements Validateable {
     String type
-    List<Long> ids
-    private String idList
+    String ids
+    String idList
+    String cartName
 
-    void setIdList(String value) {
-        this.idList = value
-        if (value) {
-            this.ids = []
-            def idsText = value.split(';')
-            idsText.each {
-                this.ids += it.toLong()
-            }
-        }
-    }
 }

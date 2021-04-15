@@ -13,6 +13,8 @@ class UrlMappings {
             "/transferForms"(resources: 'transferForm') {
                 "/approvers"(controller: 'transferForm', action: 'approvers', method: 'GET')
             }
+            "/carts"(resources: 'assetCart')
+            "/cartHistory"(resources: 'cartHistory')
         }
         "/approvers"(resources: 'approver', includes:[]){
             "/receiptApprovals"(resources: 'receiptApproval', includes:['index']) {
