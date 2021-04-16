@@ -184,8 +184,6 @@ where ri.receipt.id = :formId
             }
             form.save(flush: true)
             cmd.addedItems.each { item ->
-                println "supplierId: ${item.supplierId}"
-                println Supplier.load(item.supplierId)?.name
                 ReceiptItem receiptItem = new ReceiptItem(
                         sn: item.sn,
                         code: item.code,
