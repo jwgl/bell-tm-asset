@@ -26,7 +26,6 @@ class TransferFormController {
     }
 
     def patch(String userId, Long id, String op) {
-        println userId
         def operation = Event.valueOf(op)
         switch (operation) {
             case Event.SUBMIT:
