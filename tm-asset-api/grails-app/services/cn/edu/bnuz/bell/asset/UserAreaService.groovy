@@ -12,10 +12,12 @@ class UserAreaService {
 select new map(
     ua.id as id,
     u.name as name,
-    ua.building as building
+    r.building as building,
+    r.name as roomName
 )
 from UserArea ua
 join ua.user u
+join ua.room r
 order by u.name
 '''
     }
@@ -23,7 +25,7 @@ order by u.name
     def getFormForCreate() {
         return [
                 form: [:],
-                buildings: placeService.buildings
+                rooms: placeService.list(null)
         ]
     }
 

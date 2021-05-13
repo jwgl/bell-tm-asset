@@ -1,6 +1,5 @@
 package cn.edu.bnuz.bell.asset
 
-import cn.edu.bnuz.bell.organization.Teacher
 import cn.edu.bnuz.bell.security.SecurityService
 import grails.converters.JSON
 import grails.gorm.transactions.Transactional
@@ -36,9 +35,10 @@ select new map(
 from Asset a
 left join a.assetModel m
 left join a.room r
-left join a.supplier s
+left join a.supplier s,
+UserArea u
 where 
-(r.building in :areas or r.id = 1)
+(u.user.id = :userId and u.room = r or r.id = 1)
 and not (r.id between 2 and 5)
 and not exists(select tf.id from TransferItem ti join ti.transferForm tf where tf.status in ('CREATED', 'SUBMITTED') and ti.asset.id = a.id)
 '''
@@ -46,14 +46,13 @@ and not exists(select tf.id from TransferItem ti join ti.transferForm tf where t
             sqlStr += " and ${cmd.criterion}"
         }
         sqlStr += ' order by r.building, r.name'
-        def list = Asset.executeQuery sqlStr, cmd.args + [areas: areas]
+        def list = Asset.executeQuery sqlStr, cmd.args + [userId: securityService.userId]
         return [
                 list: list,
                 buildings: buildings,
                 places: places,
                 assetNames: assetNames,
                 states: states,
-                areas: areas,
         ]
     }
 
@@ -61,9 +60,10 @@ and not exists(select tf.id from TransferItem ti join ti.transferForm tf where t
         Asset.executeQuery'''
 select distinct new map(a.name as name, a.name as value)
 from Asset a
-left join a.room r
-where r.building in :buildings or r.id = 1
-order by a.name''', [buildings: areas]
+left join a.room r,
+UserArea u
+where u.user.id = :userId and u.room = r or r.id = 1
+order by a.name''', [userId: securityService.userId]
     }
 
     def getStates() {
@@ -72,24 +72,21 @@ order by a.name''', [buildings: areas]
 
     def getBuildings() {
         UserArea.executeQuery'''
-select distinct new map(building as name, building as value)
-from UserArea where user = :user''', [user: Teacher.load(securityService.userId)]
+select distinct new map(r.building as name, r.building as value)
+from UserArea u
+join u.room r
+where u.user.id = :userId''', [userId: securityService.userId]
     }
 
     def getPlaces() {
-        Room.executeQuery'''
-select distinct new map(id as id, building as building, name as name, name as value)
-from Room
-where (building in :buildings
-and not (id between 2 and 5)
-and status <> 'DELETED')
-or id = 1
+        UserArea.executeQuery'''
+select distinct new map(r.id as id, r.building as building, r.name as name, r.name as value)
+from UserArea u
+join u.room r
+where u.user.id = :userId
+or r.id = 1
 order by name
-''', [buildings: areas]
-    }
-
-    def getAreas() {
-        UserArea.executeQuery("select distinct building from UserArea where user = :user", [user: Teacher.load(securityService.userId)])
+''', [userId: securityService.userId]
     }
 
     def getFormInfo(Long id) {
