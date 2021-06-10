@@ -1,6 +1,7 @@
 package cn.edu.bnuz.bell.asset
 
 import cn.edu.bnuz.bell.organization.Teacher
+import cn.edu.bnuz.bell.security.User
 import cn.edu.bnuz.bell.workflow.State
 import cn.edu.bnuz.bell.workflow.StateObject
 import cn.edu.bnuz.bell.workflow.StateUserType
@@ -18,12 +19,12 @@ class TransferForm implements StateObject {
     /**
      * 提交时间
      */
-    LocalDate dateSubmitted
+    Date dateSubmitted
 
     /**
      * 经办人
      */
-    Teacher operator
+    User operator
 
     /**
      * 审核人

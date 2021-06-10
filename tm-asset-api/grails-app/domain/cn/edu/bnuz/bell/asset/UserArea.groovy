@@ -1,16 +1,16 @@
 package cn.edu.bnuz.bell.asset
 
-import cn.edu.bnuz.bell.organization.Teacher
+import cn.edu.bnuz.bell.security.User
 
 class UserArea {
-    Teacher user
+    User user
     Room room
 
     static mapping = {
         comment '楼区管理员表'
         table schema: 'tm_asset'
         id generator: 'identity', comment: 'ID'
-        user comment: '用户'
+        user length: 5,comment: '用户'
         room comment: '可管理的房间'
     }
 

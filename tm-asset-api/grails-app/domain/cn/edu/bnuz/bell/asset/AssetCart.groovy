@@ -1,7 +1,5 @@
 package cn.edu.bnuz.bell.asset
 
-import cn.edu.bnuz.bell.organization.Teacher
-
 import java.time.LocalDate
 
 /**
@@ -9,7 +7,7 @@ import java.time.LocalDate
  */
 class AssetCart {
     Asset asset
-    Teacher user
+    String userId
     LocalDate dateCreated
     String name
 
@@ -17,7 +15,7 @@ class AssetCart {
         comment '设备购物车'
         table schema: 'tm_asset'
         id generator: 'identity', comment: 'ID'
-        user comment: '所有人'
+        userId comment: '所有人'
         dateCreated comment: '创建时间'
         name comment: '购物车名称'
     }

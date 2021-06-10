@@ -27,6 +27,7 @@ select new map(
     r.building as building,
     r.id as roomId,
     r.name as place,
+    t.level2 as placeType,
     m.id as assetModelId,
     m.brand as brand,
     m.specs as specs,
@@ -35,10 +36,10 @@ select new map(
 from Asset a
 left join a.assetModel m
 left join a.room r
-left join a.supplier s,
-UserArea u
+left join r.placeType t
+left join a.supplier s
 where 
-(u.user.id = :userId and u.room = r or r.id = 1)
+(r.id = 1 or exists (select 1 from UserArea u where u.user.id = :userId and u.room = r))
 and not (r.id between 2 and 5)
 and not exists(select tf.id from TransferItem ti join ti.transferForm tf where tf.status in ('CREATED', 'SUBMITTED') and ti.asset.id = a.id)
 '''
@@ -72,7 +73,7 @@ order by a.name''', [userId: securityService.userId]
 
     def getBuildings() {
         UserArea.executeQuery'''
-select distinct new map(r.building as name, r.building as value)
+select distinct r.building
 from UserArea u
 join u.room r
 where u.user.id = :userId''', [userId: securityService.userId]
@@ -106,6 +107,7 @@ select new map(
     a.price as price,
     s.name as supplier,
     s.id as supplierId,
+    r.id as roomId,
     r.building as building,
     r.name as place,
     t.level2 as placeType,

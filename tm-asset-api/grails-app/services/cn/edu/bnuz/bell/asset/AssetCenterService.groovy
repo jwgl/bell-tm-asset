@@ -55,8 +55,7 @@ left join a.supplier s
                 assetNames: assetNames,
                 states: states,
                 areas: UserArea.executeQuery(
-                        "select distinct r.building from UserArea u join u.room r where u.user.id = :userId",
-                        [userId: User.load(securityService.userId)]),
+                        "select distinct r.building from UserArea u join u.room r"),
         ]
     }
 

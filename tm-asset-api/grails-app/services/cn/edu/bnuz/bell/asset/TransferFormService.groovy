@@ -4,7 +4,7 @@ import cn.edu.bnuz.bell.asset.stateMachine.Event
 import cn.edu.bnuz.bell.asset.stateMachine.Status
 import cn.edu.bnuz.bell.http.BadRequestException
 import cn.edu.bnuz.bell.http.NotFoundException
-import cn.edu.bnuz.bell.organization.Teacher
+import cn.edu.bnuz.bell.security.User
 import cn.edu.bnuz.bell.workflow.DomainStateMachineHandler
 import cn.edu.bnuz.bell.workflow.State
 import cn.edu.bnuz.bell.workflow.commands.SubmitCommand
@@ -12,7 +12,6 @@ import grails.gorm.transactions.Transactional
 import javassist.tools.web.BadHttpRequest
 
 import javax.annotation.Resource
-import java.time.LocalDate
 
 @Transactional
 class TransferFormService {
@@ -50,8 +49,8 @@ where o.id = :userId
         Room toPlace = Room.load(cmd.toId)
         def form = new TransferForm(
                 note: cmd.note,
-                operator: Teacher.load(userId),
-                dateSubmitted: LocalDate.now(),
+                operator: User.load(userId),
+                dateSubmitted: new Date(),
                 fromPlace: Room.load(cmd.fromId),
                 transferType: type,
                 toPlace: toPlace,
