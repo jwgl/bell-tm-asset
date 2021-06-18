@@ -6,6 +6,7 @@ class RoomOptionCommand implements Validateable{
     String name
     List<Long> seatTypeIds
     List<String> buildings
+    List<Long> rooms
     Integer seat
     String status
     List<Long> placeTypeIds
@@ -19,6 +20,9 @@ class RoomOptionCommand implements Validateable{
         }
         if (buildings?.size()) {
             arg += [buildings: buildings]
+        }
+        if (rooms?.size()) {
+            arg += [rooms: rooms]
         }
         if (placeTypeIds?.size()) {
             arg += [placeTypeIds: placeTypeIds]
@@ -46,6 +50,9 @@ class RoomOptionCommand implements Validateable{
         }
         if (buildings?.size()) {
             criterion += "${criterion.isEmpty() ? "" : " and "}r.building in (:buildings)"
+        }
+        if (rooms?.size()) {
+            criterion += "${criterion.isEmpty() ? "" : " and "}r.id in (:rooms)"
         }
         if (placeTypeIds?.size()) {
             criterion += "${criterion.isEmpty() ? "" : " and "}tp.id in (:placeTypeIds)"

@@ -90,6 +90,12 @@ order by name
 ''', [userId: securityService.userId]
     }
 
+    def getAreas() {
+        UserArea.executeQuery'''
+select u.room.id from UserArea u where u.user.id = :userId
+''', [userId: securityService.userId]
+    }
+
     def getFormInfo(Long id) {
         def result = Asset.executeQuery'''
 select new map(

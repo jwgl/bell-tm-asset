@@ -54,6 +54,7 @@ where o.id = :userId
                 fromPlace: Room.load(cmd.fromId),
                 transferType: type,
                 toPlace: toPlace,
+                fileName: cmd.fileName,
                 status: type.action == 'TRANSFER' ? State.FINISHED : domainStateMachineHandler.initialState
         )
         cmd.addedItems.each { item ->
@@ -96,6 +97,7 @@ select new map(
     tf.dateApproved as dateApproved,
     tf.otherInfo as otherInfo,
     tf.status as status,
+    tf.fileName as fileName,
     tf.workflowInstance.id as workflowInstanceId,
     o.name as operator,
     a.name as approver,

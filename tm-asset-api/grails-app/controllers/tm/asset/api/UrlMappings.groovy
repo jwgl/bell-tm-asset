@@ -12,14 +12,14 @@ class UrlMappings {
             "/areas"(resources: 'area')
             "/transferForms"(resources: 'transferForm') {
                 "/approvers"(controller: 'transferForm', action: 'approvers', method: 'GET')
-                collection {
-                    "/upload"(controller: 'transferForm', action: 'upload', method: 'POST')
-                }
             }
             "/carts"(resources: 'assetCart')
             "/cartHistory"(resources: 'cartHistory')
             "/scraps"(resources: 'scrap') {
                 "/approvers"(controller: 'scrap', action: 'approvers', method: 'GET')
+                collection {
+                    "/upload"(controller: 'scrap', action: 'upload', method: 'POST')
+                }
             }
         }
         "/approvers"(resources: 'approver', includes:[]){
@@ -37,6 +37,7 @@ class UrlMappings {
 
         "/models"(resources: 'model', include: ['index', 'save'])
         "/output"(resources: 'output', include: ['index'])
+        "/attachments"(resources: 'attachment', includes: ['index'])
 
         "500"(view: '/error')
         "404"(view: '/notFound')

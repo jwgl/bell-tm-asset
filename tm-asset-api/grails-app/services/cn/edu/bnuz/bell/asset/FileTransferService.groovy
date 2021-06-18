@@ -8,6 +8,8 @@ import org.springframework.web.multipart.MultipartFile
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 @Transactional
 class FileTransferService {
@@ -46,6 +48,22 @@ class FileTransferService {
         } else {
             throw new BadRequestException('Empty file.')
         }
+    }
+
+    def download(String fileName, HttpServletResponse response) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        ZipOutputStream zipFile = new ZipOutputStream(baos)
+        File file = new File("${filesPath}/${fileName}")
+        if (file?.exists() && file.isFile()) {
+            zipFile.putNextEntry(new ZipEntry(fileName))
+            file.withInputStream { input -> zipFile << input }
+            zipFile.closeEntry()
+        }
+        zipFile.finish()
+        response.setHeader("Content-disposition",
+                "attachment; filename=\"" + URLEncoder.encode("${fileName}.zip", "UTF-8") + "\"")
+        response.contentType = "application/zip"
+        response.outputStream << baos.toByteArray()
     }
 
 }

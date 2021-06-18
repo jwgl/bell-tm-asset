@@ -62,6 +62,11 @@ class TransferForm implements StateObject {
     Room toPlace
 
     /**
+     * 上传文件
+     */
+    String fileName
+
+    /**
      * 工作流实例
      */
     WorkflowInstance workflowInstance
@@ -83,6 +88,7 @@ class TransferForm implements StateObject {
         otherInfo type: 'text', comment: '关联信息JSON'
         fromPlace comment: '源地址'
         toPlace comment: '目标地址'
+        fileName type: 'text', comment: '上传文件'
     }
     static constraints = {
         approver nullable: true
@@ -91,6 +97,7 @@ class TransferForm implements StateObject {
         workflowInstance nullable: true
         otherInfo nullable: true
         fromPlace nullable: true
+        fileName nullable: true
     }
 
     String getWorkflowId() {

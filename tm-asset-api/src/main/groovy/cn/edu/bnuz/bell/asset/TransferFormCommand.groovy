@@ -5,6 +5,7 @@ class TransferFormCommand {
     String note
     Long fromId
     String transferType
+    String fileName
     Long toId
     List<TransferFormItem> addedItems
 }

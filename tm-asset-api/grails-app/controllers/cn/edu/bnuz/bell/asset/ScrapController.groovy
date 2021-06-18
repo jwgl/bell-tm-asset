@@ -55,5 +55,6 @@ class ScrapController {
      */
     def delete(Long id) {
         transferFormService.delete(id)
+        renderOk()
     }
 }

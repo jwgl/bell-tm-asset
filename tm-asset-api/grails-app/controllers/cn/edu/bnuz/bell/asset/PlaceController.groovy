@@ -13,7 +13,7 @@ class PlaceController {
     def index(RoomOptionCommand cmd) {
         def createAble = securityService.hasPermission('PERM_ASSET_PLACE_WRITE')
         if (!createAble) {
-            cmd.buildings = areaService.areas
+            cmd.rooms = areaService.areas
         }
         renderJson([createAble: createAble, rooms: placeService.list(cmd)])
     }
