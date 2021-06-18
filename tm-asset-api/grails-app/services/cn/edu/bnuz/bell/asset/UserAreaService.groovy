@@ -1,6 +1,7 @@
 package cn.edu.bnuz.bell.asset
 
-import cn.edu.bnuz.bell.organization.Teacher
+import cn.edu.bnuz.bell.asset.cn.edu.bnuz.bell.asset.dv.DvUserArea
+import cn.edu.bnuz.bell.security.User
 import grails.gorm.transactions.Transactional
 
 @Transactional
@@ -8,44 +9,34 @@ class UserAreaService {
     PlaceService placeService
 
     def list() {
-        UserArea.executeQuery'''
+        DvUserArea.executeQuery'''
 select new map(
-    ua.id as id,
+    u.id as id,
     u.name as name,
-    ua.building as building
+    u.areas as areas
 )
-from UserArea ua
-join ua.user u
-order by u.name
+from DvUserArea u
 '''
     }
 
     def getFormForCreate() {
         return [
                 form: [:],
-                buildings: placeService.buildings
+                rooms: placeService.list(new RoomOptionCommand())
         ]
     }
 
     def create(UserAreaCommand cmd) {
-        cmd.buildings?.each{
-            UserArea userArea = UserArea.findByUserAndBuilding(Teacher.load(cmd.userId), it)
-            if (!userArea) {
-                UserArea form = new UserArea(
-                        user: Teacher.load(cmd.userId),
-                        building: it
-                )
-                if (!form.save()){
-                    form.errors.each {
-                        println it
-                    }
-                }
-            }
-        }
+        def user = User.load(cmd.userId)
+        UserArea.executeUpdate("delete from UserArea where user = :user and room.id in (:ids)", [user: user, ids: cmd.rooms])
+        UserArea.executeUpdate'''
+insert into UserArea(user, room)
+select :user, r from Room r where id in (:ids)
+''', [user: user, ids: cmd.rooms]
     }
 
-    def delete(Long id) {
-        UserArea userArea = UserArea.load(id)
-        userArea?.delete()
+    def delete(String id) {
+        def user = User.load(id)
+        UserArea.executeUpdate("delete from UserArea where user = :user", [user: user])
     }
 }

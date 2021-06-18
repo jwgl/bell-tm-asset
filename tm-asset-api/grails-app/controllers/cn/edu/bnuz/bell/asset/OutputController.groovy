@@ -41,6 +41,12 @@ class OutputController {
                         admin: securityService.hasRole('ROLE_ASSET_CENTER_ADMIN')
                 ]
                 break
+            case 'room':
+                parameters = [
+                        admin: securityService.hasRole('ROLE_ASSET_CENTER_ADMIN'),
+                        userId: securityService.userId
+                ]
+                break
             default: throw new BadRequestException()
         }
 

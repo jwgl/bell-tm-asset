@@ -30,6 +30,7 @@ class TransferApprovalService {
 
     def getCounts(String userId, List<TransferType> types) {
         [
+                (ListType.TOBE): TransferForm.countByStatusAndTransferTypeInList(State.CREATED, types),
                 (ListType.TODO): TransferForm.countByStatusAndTransferTypeInList(State.SUBMITTED, types),
                 (ListType.DONE): TransferForm.countByApproverAndTransferTypeInList(Teacher.load(userId), types)
         ]
@@ -37,8 +38,10 @@ class TransferApprovalService {
 
     def list(String userId, ListCommand cmd, List<TransferType> types) {
         switch (cmd.type) {
+            case ListType.TOBE:
+                return findTodoList(userId, State.CREATED, cmd, types)
             case ListType.TODO:
-                return findTodoList(userId, cmd, types)
+                return findTodoList(userId, State.SUBMITTED, cmd, types)
             case ListType.DONE:
                 return findDoneList(userId, cmd, types)
             default:
@@ -46,7 +49,7 @@ class TransferApprovalService {
         }
     }
 
-    def findTodoList(String userId, ListCommand cmd, List<TransferType> types) {
+    def findTodoList(String userId, State state, ListCommand cmd, List<TransferType> types) {
         def forms = TransferForm.executeQuery'''
 select new map(
     tf.id as id,
@@ -69,7 +72,7 @@ join tf.toPlace tp
 left join tf.approver a
 where tf.status = :status and tf.transferType in (:types)
 order by tf.dateSubmitted desc
-''', [status: State.SUBMITTED, types: types], [offset: cmd.offset, max: cmd.max]
+''', [status: state, types: types], [offset: cmd.offset, max: cmd.max]
         return [forms: forms, counts: getCounts(userId, types)]
     }
 
@@ -78,8 +81,7 @@ order by tf.dateSubmitted desc
 select new map(
     tf.id as id,
     tf.note as note,
-    tf.dateSubmitted as dateSubmitted,
-    tf.dateApproved as date,
+    tf.dateSubmitted as date,
     tf.otherInfo as otherInfo,
     tf.status as status,
     o.name as operator,

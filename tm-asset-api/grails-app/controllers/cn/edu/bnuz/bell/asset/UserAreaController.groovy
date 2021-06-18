@@ -21,7 +21,7 @@ class UserAreaController {
         renderJson([id: 1])
     }
 
-    def delete(Long id) {
+    def delete(String id) {
         userAreaService.delete(id)
         renderOk()
     }

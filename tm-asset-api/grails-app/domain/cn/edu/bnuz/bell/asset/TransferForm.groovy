@@ -1,6 +1,7 @@
 package cn.edu.bnuz.bell.asset
 
 import cn.edu.bnuz.bell.organization.Teacher
+import cn.edu.bnuz.bell.security.User
 import cn.edu.bnuz.bell.workflow.State
 import cn.edu.bnuz.bell.workflow.StateObject
 import cn.edu.bnuz.bell.workflow.StateUserType
@@ -18,12 +19,12 @@ class TransferForm implements StateObject {
     /**
      * 提交时间
      */
-    LocalDate dateSubmitted
+    Date dateSubmitted
 
     /**
      * 经办人
      */
-    Teacher operator
+    User operator
 
     /**
      * 审核人
@@ -61,6 +62,11 @@ class TransferForm implements StateObject {
     Room toPlace
 
     /**
+     * 上传文件
+     */
+    String fileName
+
+    /**
      * 工作流实例
      */
     WorkflowInstance workflowInstance
@@ -82,6 +88,7 @@ class TransferForm implements StateObject {
         otherInfo type: 'text', comment: '关联信息JSON'
         fromPlace comment: '源地址'
         toPlace comment: '目标地址'
+        fileName type: 'text', comment: '上传文件'
     }
     static constraints = {
         approver nullable: true
@@ -90,6 +97,7 @@ class TransferForm implements StateObject {
         workflowInstance nullable: true
         otherInfo nullable: true
         fromPlace nullable: true
+        fileName nullable: true
     }
 
     String getWorkflowId() {

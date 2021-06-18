@@ -15,6 +15,12 @@ class UrlMappings {
             }
             "/carts"(resources: 'assetCart')
             "/cartHistory"(resources: 'cartHistory')
+            "/scraps"(resources: 'scrap') {
+                "/approvers"(controller: 'scrap', action: 'approvers', method: 'GET')
+                collection {
+                    "/upload"(controller: 'scrap', action: 'upload', method: 'POST')
+                }
+            }
         }
         "/approvers"(resources: 'approver', includes:[]){
             "/receiptApprovals"(resources: 'receiptApproval', includes:['index']) {
@@ -23,11 +29,15 @@ class UrlMappings {
             "/transferApprovals"(resources: 'transferApproval', includes:['index']) {
                 "/workitems"(resources: 'transferApproval', includes: ['show', 'patch'])
             }
+            "/scrapApprovals"(resources: 'scrapApproval', includes:['index']) {
+                "/workitems"(resources: 'scrapApproval', includes: ['show', 'patch'])
+            }
             "/userAreas"(resources: 'userArea')
         }
 
         "/models"(resources: 'model', include: ['index', 'save'])
         "/output"(resources: 'output', include: ['index'])
+        "/attachments"(resources: 'attachment', includes: ['index'])
 
         "500"(view: '/error')
         "404"(view: '/notFound')

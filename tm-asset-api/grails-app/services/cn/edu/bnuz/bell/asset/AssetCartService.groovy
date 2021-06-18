@@ -1,6 +1,5 @@
 package cn.edu.bnuz.bell.asset
 
-import cn.edu.bnuz.bell.organization.Teacher
 import grails.gorm.transactions.Transactional
 
 import java.time.LocalDate

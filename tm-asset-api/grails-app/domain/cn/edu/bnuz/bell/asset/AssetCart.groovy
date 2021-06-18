@@ -1,6 +1,6 @@
 package cn.edu.bnuz.bell.asset
 
-import cn.edu.bnuz.bell.organization.Teacher
+import cn.edu.bnuz.bell.security.User
 
 import java.time.LocalDate
 
@@ -9,7 +9,7 @@ import java.time.LocalDate
  */
 class AssetCart {
     Asset asset
-    Teacher user
+    User user
     LocalDate dateCreated
     String name
 
