@@ -36,6 +36,9 @@ class OutputController {
                         ids: ids == '' ? null : ids
                 ]
                 break
+            case 'device-area':
+                parameters = [ userId: securityService.userId ]
+                break
             case 'device-all':
                 parameters = [
                         admin: securityService.hasRole('ROLE_ASSET_CENTER_ADMIN')
