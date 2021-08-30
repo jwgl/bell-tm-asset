@@ -77,6 +77,7 @@ dependencies {
     // project
     compile "cn.edu.bnuz.bell:bell-core-cdm:0.1"
     compile "cn.edu.bnuz.bell:bell-core-sys:0.1"
+    implementation("com.vladmihalcea:hibernate-types-52:${hibernateTypesVersion}")
 }
 
 bootRun {

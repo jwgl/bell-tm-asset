@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize
 class PlaceController {
     AreaService areaService
     PlaceService placeService
+    LabelService labelService
     SecurityService securityService
 
     def index(RoomOptionCommand cmd) {
@@ -31,7 +32,21 @@ class PlaceController {
     }
 
     def show(Long id) {
-        renderJson([createAble:  securityService.hasPermission('PERM_ASSET_PLACE_WRITE'), form: placeService.getFormInfo(id)])
+        def labels = labelService.labels()
+        def labelTypes = labelService.labelTypes()
+        if (!securityService.hasRole('ROLE_ASSET_LABEL_ADMIN')) {
+            labels = labels.grep {
+                it.single == true
+            }
+            labelTypes = labelTypes.grep {
+                it.single == true
+            }
+        }
+        renderJson([createAble:  securityService.hasPermission('PERM_ASSET_PLACE_WRITE'),
+                    form: placeService.getFormInfo(id),
+                    labels: labels,
+                    labelTypes: labelTypes
+        ])
     }
 
     @PreAuthorize('hasAuthority("PERM_ASSET_PLACE_WRITE")')

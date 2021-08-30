@@ -53,6 +53,8 @@ class Room {
      */
     String note
 
+    static hasMany = [termStates: RoomLife]
+
     static mapping = {
         comment     '场地'
         table       schema: 'tm_asset'
