@@ -134,6 +134,32 @@ where r.id = :id
 ''', [id: id]
         if (result) {
             result[0]['logs'] = PlaceChangeLog.findAllByPlace(Room.load(id), [sort: 'dateCreated', order: 'asc'])
+            def labels = RoomLabel.executeQuery'''
+select new map(
+l.name as labelName,
+l.business as business,
+t.name as type,
+t.single as single,
+t.color as color,
+u.name as creator,
+u.id as userId
+)
+from RoomLabel rl
+join rl.label l
+join l.type t
+join l.creator u
+where rl.room.id = :id
+and (rl.deleted is null or deleted is false)
+and current_date < rl.dateExpired
+''', [id: id]
+            if (securityService.hasRole('ROLE_ASSET_LABEL_ADMIN')) {
+                result[0]['labels'] = labels
+            } else {
+                result[0]['labels'] = labels.grep {
+                    return !it.single || it.userId == securityService.userId
+                }
+            }
+
             return result[0]
         } else {
             return null

@@ -5,6 +5,7 @@ class UrlMappings {
     static mappings = {
         "/users"(resources: 'user', includes:[]){
             "/places"(resources: 'place')
+            "/placePublics"(resources: 'placePublic')
             "/receiptForms"(resources: 'receiptForm') {
                 "/approvers"(controller: 'receiptForm', action: 'approvers', method: 'GET')
             }
@@ -21,6 +22,9 @@ class UrlMappings {
                     "/upload"(controller: 'scrap', action: 'upload', method: 'POST')
                 }
             }
+            "/labelAdmins"(resources: 'labelAdmin')
+            "/labellings"(resources: 'labelling')
+            "/roomLifes"(resources: 'roomLife')
         }
         "/approvers"(resources: 'approver', includes:[]){
             "/receiptApprovals"(resources: 'receiptApproval', includes:['index']) {
