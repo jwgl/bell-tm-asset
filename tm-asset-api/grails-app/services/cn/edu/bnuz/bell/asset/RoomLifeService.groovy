@@ -126,12 +126,12 @@ where r.id = :id and (t.termId is null or t.termId = :termId)
                             note: cmd.note,
                             dateCreated: new Date()
                     )
-                    roomLifeI.save()
+                    roomLifeI.save(flush: true)
                     // 场地变动标签
-                    for (j in 0..cmd.otherPlaces?.size()) {
+                    for (j in 0..cmd.labels?.size() - 1) {
                         def roomLifeILabel = new RoomLifeLabel(
-                                room: roomLifeI,
-                                label: Label.load(cmd.otherPlaces[j]),
+                                roomLife: roomLifeI,
+                                label: Label.load(cmd.labels[j]),
                                 dateCreated: new Date()
                         )
                         roomLifeILabel.save()
@@ -140,7 +140,7 @@ where r.id = :id and (t.termId is null or t.termId = :termId)
                 }
                 break
             case 'MERGE':
-                if (cmd.otherPlaces && cmd.otherPlaces.size() > 1) {
+                if (cmd.otherPlaces && cmd.otherPlaces.size() > 0) {
                     def form = new Room(
                             name: cmd.name,
                             building: room.building,
@@ -164,8 +164,17 @@ where r.id = :id and (t.termId is null or t.termId = :termId)
                             note: cmd.note,
                             dateCreated: new Date()
                     )
-                    newFormRoomLife.save()
-                    for (i in 1..cmd.otherPlaces.size()) {
+                    newFormRoomLife.save(flush: true)
+                    // 场地变动标签
+                    for (j in 0..cmd.labels?.size() - 1) {
+                        def roomLifeILabel = new RoomLifeLabel(
+                                roomLife: newFormRoomLife,
+                                label: Label.load(cmd.labels[j]),
+                                dateCreated: new Date()
+                        )
+                        roomLifeILabel.save()
+                    }
+                    for (i in 0..cmd.otherPlaces.size() - 1) {
                         def roomI = Room.load(cmd.otherPlaces[i])
                         def roomLifeI = new RoomLife(
                                 room: roomI,

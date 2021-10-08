@@ -15,6 +15,7 @@ select new map(
 l.id as id,
 l.name as labelName,
 l.business as business,
+t.id as typeId,
 t.name as type,
 t.color as color,
 t.single as single,

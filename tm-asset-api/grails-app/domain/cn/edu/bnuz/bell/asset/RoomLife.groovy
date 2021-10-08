@@ -37,4 +37,8 @@ class RoomLife {
         dateCreated comment: '创建时间'
     }
 
+    static constraints = {
+        note nullable: true
+    }
+
 }

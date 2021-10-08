@@ -20,11 +20,11 @@ class RoomLifeLabel implements Serializable {
     }
 
     boolean equals(other) {
-        if (!(other instanceof RoomLabel)) {
+        if (!(other instanceof RoomLifeLabel)) {
             return false
         }
 
-        other.room?.id == roomLife?.id && other.label?.id == label?.id
+        other.roomLife?.id == roomLife?.id && other.label?.id == label?.id
     }
 
     int hashCode() {
