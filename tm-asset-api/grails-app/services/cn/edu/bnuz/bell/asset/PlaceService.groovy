@@ -88,11 +88,8 @@ where r.id not between 2 and 5
         form.setMeasure(cmd.measure)
         if (securityService.hasPermission('PERM_ASSET_PLACE_WRITE')) {
             form.setName(cmd.name)
-            form.setBuilding(cmd.building)
             form.setStatus(cmd.status)
-            form.setPurpose(cmd.purpose)
             form.setNote(cmd.note)
-            form.setSeatType(cmd.seatType)
             form.setDepartment(Dept.load(cmd.departmentId))
             form.setPlaceType(RoomType.load(cmd.placeTypeId))
         }

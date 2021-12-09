@@ -57,4 +57,9 @@ class RoomLifeCommand {
      * 备注
      */
     String note
+
+    /**
+     *分拆的场地信息
+     */
+    List<RoomCommand> rooms
 }

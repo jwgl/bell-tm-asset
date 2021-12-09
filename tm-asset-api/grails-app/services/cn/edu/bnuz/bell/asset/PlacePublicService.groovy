@@ -76,7 +76,8 @@ from DvRoomPlan dr
 where dr.id > 100
 '''
         sqlStr += " ${cmd.criterion} order by dr.building, dr.name"
-        DvRoomPlan.executeQuery sqlStr, cmd.args
+        def args = cmd.args
+        DvRoomPlan.executeQuery sqlStr, args
     }
 
     def getTerms() {

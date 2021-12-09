@@ -4,18 +4,18 @@ import org.springframework.security.access.prepost.PreAuthorize
 
 @PreAuthorize('hasAuthority("PERM_ASSET_PLACE_WRITE")')
 class RoomLifeController {
-    RoomLifeService roomLifeService
+    PlanService planService
     def index() { }
 
 
     def edit(Long id) {
-        renderJson roomLifeService.getFormForEdit(id)
+        renderJson planService.getFormForEdit(id)
     }
 
     def update(Long id) {
         RoomLifeCommand cmd = new RoomLifeCommand()
         bindData(cmd, request.JSON)
-        roomLifeService.update(cmd)
+        planService.update(cmd)
         renderOk()
     }
 }

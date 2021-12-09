@@ -37,11 +37,11 @@ class RoomPublicOptionCommand implements Validateable {
         if (seatH > 0 && seatH > seatL) {
             arg += [seatL: seatL, seatH: seatH]
         }
-        if (labels) {
-            arg += [labels: labels]
-        }
         if (forPlan) {
             arg += [termId: termId]
+        }
+        if (labels) {
+            arg += [labels: labels]
         }
         return arg
     }
@@ -74,10 +74,8 @@ class RoomPublicOptionCommand implements Validateable {
             criterion += " and dr.termId = :termId"
             if (labels) {
                 criterion += " and  " + '''
-                            (exists (select 1 from RoomLabel rl
-                            where rl.room.id = dr.id and rl.label.id in (:labels) and rl.dateExpired > current_date) 
-                            or exists (select 1 from RoomLifeLabel rll join rll.roomLife rl
-                            where rl.room.id = dr.id and l.id in (:labels) and rll.dateExpired > current_date))
+                            exists (select 1 from RoomLifeLabel rll join rll.label l join rll.roomLife rl
+                            where rl.room.id = dr.id and l.id in (:labels))
                             '''
             }
         } else {
