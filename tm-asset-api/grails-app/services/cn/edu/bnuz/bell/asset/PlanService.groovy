@@ -1,7 +1,10 @@
 package cn.edu.bnuz.bell.asset
 
+import cn.edu.bnuz.bell.asset.dv.DvPlan
 import cn.edu.bnuz.bell.http.BadRequestException
+import cn.edu.bnuz.bell.http.ForbiddenException
 import cn.edu.bnuz.bell.master.TermService
+import grails.converters.JSON
 import grails.gorm.transactions.Transactional
 import javassist.tools.web.BadHttpRequest
 
@@ -12,36 +15,41 @@ class PlanService {
     PlaceService placeService
 
     def list(Integer termId) {
-        Room.executeQuery'''
+        DvPlan.executeQuery'''
 select new map(
-r.id as id,
-case when t.termId is null then r.name else t.name as name,
-r.building as building,
-r.seat as seat,
-r.measure as measure,
-r.status as status,
-r.purpose as purpose,
-r.note as note,
-r.seatType as seatType,
-d.name as department,
-tp.level1 as groups,
-tp.level2 as roomType
+id as id,
+action as action,
+dateCreated as dateCreated,
+dateProcessed as dateProcessed,
+name as name,
+status as status,
+termId as termId,
+roomRelative as roomRelative
 )
-from Room r
-join r.department d
-join r.placeType tp
-left join r.termStates t
-where t.termId is null or t.termId = :termId
+from DvPlan
+where :termId is null or termId = :termId
 ''', [termId: termId]
     }
 
-    def getPlanList(Long roomId) {
-        RoomLife.executeQuery'''
+    def getFormInfo(Long id) {
+        def result = DvPlan.executeQuery'''
 select new map(
-
+id as id,
+action as action,
+dateCreated as dateCreated,
+dateProcessed as dateProcessed,
+name as name,
+status as status,
+termId as termId,
+roomRelative as roomRelative,
+info as info
 )
-'''
+from DvPlan
+where id = :id
+''', [id: id]
+        return result ? result[0] : null
     }
+
 
     def getFormForEdit(Long id) {
         // 保留id在100以内的房间为特殊房间，不能编辑
@@ -80,99 +88,6 @@ where r.id = :id and r.id > 100
         }
     }
 
-    def update(RoomLifeCommand cmd) {
-//        Room room = Room.load(cmd.id)
-        switch (cmd.action) {
-            case 'CREATE':
-                //创建新场地
-                Room room = createRoom(cmd.rooms[0])
-                createRoomLife(new RoomLifeCommand(
-                        name: room.name,
-                        seat: room.seat,
-                        status: cmd.rooms[0].status,
-                        measure: room.measure,
-                        departmentId: room.department.id,
-                        placeTypeId: room.placeType.id,
-                        note: cmd.note,
-                        labels: cmd.rooms[0].labels
-                ), room)
-                break
-            case 'REMOVE':
-                //创建新场地
-                Room room = Room.load(cmd.id)
-                createRoomLife(new RoomLifeCommand(
-                        name: room.name,
-                        seat: room.seat,
-                        status: 'DELETED',
-                        measure: room.measure,
-                        departmentId: room.department.id,
-                        placeTypeId: room.placeType.id,
-                        note: cmd.note,
-                        labels: cmd.rooms[0].labels
-                ), room)
-                break
-            case 'SEPARATE':
-                // 场地变动信息：取消原场地
-                Room room = Room.load(cmd.id)
-                createRoomLife(new RoomLifeCommand(
-                        name: room.name,
-                        seat: room.seat,
-                        status: 'DELETED',
-                        measure: room.measure,
-                        departmentId: room.department.id,
-                        placeTypeId: room.placeType.id,
-                        note: cmd.note
-                ), room)
-
-                // 创建多个新场地
-                for (i in 0..cmd.rooms.size() - 1) {
-                    def form = createRoom(cmd.rooms[i])
-                    createRoomLife(new RoomLifeCommand(
-                            name: cmd.rooms[i].name,
-                            seat: cmd.rooms[i].seat,
-                            status: cmd.rooms[i].status,
-                            measure: cmd.rooms[i].measure,
-                            departmentId: cmd.rooms[i].departmentId,
-                            placeTypeId: cmd.rooms[i].placeTypeId,
-                            note: cmd.rooms[i].note,
-                            labels: cmd.rooms[i].labels
-                    ), form)
-                }
-                break
-            case 'MERGE':
-                if (cmd.otherPlaces && cmd.otherPlaces.size() > 0) {
-                    Room room = createRoom(cmd.rooms[0])
-                    createRoomLife(new RoomLifeCommand(
-                            name: room.name,
-                            seat: room.seat,
-                            status: cmd.rooms[0].status,
-                            measure: room.measure,
-                            departmentId: room.department.id,
-                            placeTypeId: room.placeType.id,
-                            note: cmd.note,
-                            labels: cmd.rooms[0].labels
-                    ), room)
-
-                    for (i in 0..cmd.otherPlaces.size() - 1) {
-                        def roomI = Room.load(cmd.otherPlaces[i])
-                        createRoomLife(new RoomLifeCommand(
-                                name: roomI.name,
-                                seat: roomI.seat,
-                                status: 'DELETED',
-                                measure: roomI.measure,
-                                departmentId: roomI.department.id,
-                                placeTypeId: roomI.placeType.id,
-                                note: roomI.note
-                        ), roomI)
-                    }
-                }
-                break
-            case 'OTHER':
-                Room room = Room.load(cmd.id)
-                createRoomLife(cmd, room)
-        }
-    }
-
     def findPlaces(String building, Long id) {
         Room.executeQuery'''
 select distinct new map(
@@ -189,18 +104,13 @@ order by name''', [building: building, id: id]
         return termService.activeTerm.id % 10 == 1 ? termService.activeTerm.id + 1 : termService.activeTerm.id + 9
     }
 
-    /**
-     * 创建新场地，状态为RAW标识新建未启用，区别于BACKUP
-     * @param cmd
-     * @return
-     */
     def createRoom(RoomCommand cmd) {
         Room form = new Room(
                 name: cmd.name,
                 building: cmd.building,
                 seat: cmd.seat,
                 measure: cmd.measure,
-                status: 'RAW',
+                status: cmd.status,
                 note: cmd.note,
                 department: Dept.load(cmd.departmentId),
                 placeType: RoomType.load(cmd.placeTypeId)
@@ -225,34 +135,42 @@ order by name''', [building: building, id: id]
         return form
     }
 
-    def createRoomLife(RoomLifeCommand cmd, Room room) {
-        RoomLife roomLife = new RoomLife(
-                room: room,
+    def create(PlanCommand cmd) {
+        Plan plan = new Plan(
                 name: cmd.name,
-                seat: cmd.seat,
-                status: cmd.status,
-                termId: nextTerm,
-                measure: cmd.measure,
-                department: Dept.load(cmd.departmentId),
-                placeType: RoomType.load(cmd.placeTypeId),
-                note: cmd.note,
+                action: cmd.action,
+                status: 'CREATED',
+                termId: getNextTerm(),
+                info: "${cmd.rooms as JSON}",
                 dateCreated: new Date()
         )
-        if(!roomLife.save(flush: true)) {
-            roomLife.errors.each {
+        if (!plan.save(flush: true)){
+            plan.errors.each {
                 println it
             }
         }
-        if (cmd.labels?.size() > 0) {
-            for (j in 0..cmd.labels?.size() - 1) {
-                def roomLifeILabel = new RoomLifeLabel(
-                        roomLife: roomLife,
-                        label: Label.load(cmd.labels[j]),
-                        dateCreated: new Date()
+        if (cmd.relativePlaces?.size() > 0) {
+            cmd.relativePlaces.each {
+                PlanRoom planRoom = new PlanRoom(
+                        plan: plan,
+                        room: Room.load(it)
                 )
-                roomLifeILabel.save()
+                if (!planRoom.save()) {
+                    planRoom.errors.each {
+                        println it
+                    }
+                }
             }
         }
-        return roomLife
+    }
+
+    def executePlan(Plan plan, String op) {
+        plan.setStatus(op)
+        plan.setDateProcessed(new Date())
+        if (!plan.save()) {
+            plan.errors.each {
+                println(it)
+            }
+        }
     }
 }

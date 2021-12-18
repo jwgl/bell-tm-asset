@@ -131,24 +131,7 @@ where r.id = :id
 ''', [id: id]
         if (result) {
             result[0]['logs'] = PlaceChangeLog.findAllByPlace(Room.load(id), [sort: 'dateCreated', order: 'asc'])
-            def labels = RoomLabel.executeQuery'''
-select new map(
-l.name as labelName,
-l.business as business,
-t.name as type,
-t.single as single,
-t.color as color,
-u.name as creator,
-u.id as userId
-)
-from RoomLabel rl
-join rl.label l
-join l.type t
-join l.creator u
-where rl.room.id = :id
-and (rl.deleted is null or deleted is false)
-and current_date < rl.dateExpired
-''', [id: id]
+            def labels = getRoomLabels(id)
             if (securityService.hasRole('ROLE_ASSET_LABEL_ADMIN')) {
                 result[0]['labels'] = labels
             } else {
@@ -156,7 +139,7 @@ and current_date < rl.dateExpired
                     return !it.single || it.userId == securityService.userId
                 }
             }
-
+            result[0]['plans'] = findPlanByRoom(id)
             return result[0]
         } else {
             return null
@@ -230,4 +213,52 @@ order by name'''
     Boolean hasAsset(Long id) {
         Asset.countByRoom(Room.load(id))
     }
+
+    /**
+     * 存在未完成计划的场地，不允许再新建计划
+     */
+    Boolean planAble(Long id) {
+        def result = PlanRoom.executeQuery("select 1 from PlanRoom pr where pr.room.id = :roomId and pr.plan.status = :status",
+                [roomId: id, status: 'CREATED'])
+        return result ? false : true
+    }
+
+    def getRoomLabels(Long id) {
+        RoomLabel.executeQuery'''
+select new map(
+l.name as labelName,
+l.business as business,
+t.name as type,
+t.single as single,
+t.color as color,
+u.name as creator,
+u.id as userId
+)
+from RoomLabel rl
+join rl.label l
+join l.type t
+join l.creator u
+where rl.room.id = :id
+and (rl.deleted is null or deleted is false)
+and current_date < rl.dateExpired
+''', [id: id]
+    }
+
+    def findPlanByRoom(Long roomId) {
+        PlanRoom.executeQuery'''
+select new map(
+p.name as name,
+p.status as status,
+p.termId as termId,
+p.dateCreated as dateCreated,
+p.action as action,
+p.info as info 
+)
+from PlanRoom pr
+join pr.plan p
+join pr.room r
+where r.id = :id
+''', [id: roomId]
+    }
+
 }

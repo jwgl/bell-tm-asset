@@ -1,4 +1,4 @@
-package cn.edu.bnuz.bell.asset.cn.edu.bnuz.bell.asset.dv
+package cn.edu.bnuz.bell.asset.dv
 
 import cn.edu.bnuz.bell.orm.PostgreSQLJsonUserType
 import grails.converters.JSON

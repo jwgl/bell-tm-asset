@@ -1,6 +1,6 @@
 package cn.edu.bnuz.bell.asset
 
-import cn.edu.bnuz.bell.asset.cn.edu.bnuz.bell.asset.dv.DvUserArea
+import cn.edu.bnuz.bell.asset.dv.DvUserArea
 import cn.edu.bnuz.bell.security.User
 import grails.gorm.transactions.Transactional
 

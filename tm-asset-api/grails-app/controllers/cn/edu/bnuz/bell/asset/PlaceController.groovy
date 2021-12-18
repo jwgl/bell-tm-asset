@@ -45,7 +45,8 @@ class PlaceController {
         renderJson([createAble:  securityService.hasPermission('PERM_ASSET_PLACE_WRITE'),
                     form: placeService.getFormInfo(id),
                     labels: labels,
-                    labelTypes: labelTypes
+                    labelTypes: labelTypes,
+                    planAble: placeService.planAble(id)
         ])
     }
 

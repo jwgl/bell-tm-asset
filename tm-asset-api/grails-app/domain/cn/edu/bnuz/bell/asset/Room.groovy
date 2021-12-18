@@ -53,7 +53,7 @@ class Room {
      */
     String note
 
-    static hasMany = [termStates: RoomLife]
+    static hasMany = [termStates: Plan]
 
     static mapping = {
         comment     '场地'

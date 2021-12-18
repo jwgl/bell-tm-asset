@@ -24,7 +24,7 @@ class UrlMappings {
             }
             "/labelAdmins"(resources: 'labelAdmin')
             "/labellings"(resources: 'labelling')
-            "/roomLifes"(resources: 'roomLife')
+            "/plans"(resources: 'plan')
         }
         "/approvers"(resources: 'approver', includes:[]){
             "/receiptApprovals"(resources: 'receiptApproval', includes:['index']) {

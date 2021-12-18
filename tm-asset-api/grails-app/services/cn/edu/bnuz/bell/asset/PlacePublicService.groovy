@@ -1,10 +1,8 @@
 package cn.edu.bnuz.bell.asset
 
-import cn.edu.bnuz.bell.asset.cn.edu.bnuz.bell.asset.dv.DvRoomPlan
-import cn.edu.bnuz.bell.asset.cn.edu.bnuz.bell.asset.dv.DvRoomWithLabel
 import cn.edu.bnuz.bell.master.Term
 import grails.gorm.transactions.Transactional
-import cn.edu.bnuz.bell.asset.cn.edu.bnuz.bell.asset.dv.DvRoom
+import cn.edu.bnuz.bell.asset.dv.DvRoom
 
 @Transactional
 class PlacePublicService {
@@ -35,49 +33,8 @@ where dr.id > 100 and dr.status <> 'DELETED'
         DvRoom.executeQuery sqlStr, cmd.args
     }
 
-    def listByLabel(RoomPublicOptionCommand cmd) {
-        def sqlStr = '''
-select new map(
-dr.id as id,
-dr.name as name,
-dr.building as building,
-dr.seat as seat,
-dr.measure as measure,
-dr.status as status,
-dr.department as department,
-dr.groups as groups,
-dr.roomType as roomType,
-dr.termId as termId,
-dr.labels as labels
-)
-from DvRoomWithLabel dr
-where dr.id > 100 and dr.status <> 'DELETED'
-'''
-        sqlStr += " ${cmd.criterion} order by dr.building, dr.name"
-        DvRoomWithLabel.executeQuery sqlStr, cmd.args
-    }
-
     def listPlan(RoomPublicOptionCommand cmd) {
-        def sqlStr = '''
-select new map(
-dr.id as id,
-dr.name as name,
-dr.building as building,
-dr.seat as seat,
-dr.measure as measure,
-dr.status as status,
-dr.department as department,
-dr.groups as groups,
-dr.roomType as roomType,
-dr.termId as termId,
-dr.labels as labels
-)
-from DvRoomPlan dr
-where dr.id > 100
-'''
-        sqlStr += " ${cmd.criterion} order by dr.building, dr.name"
-        def args = cmd.args
-        DvRoomPlan.executeQuery sqlStr, args
+
     }
 
     def getTerms() {
