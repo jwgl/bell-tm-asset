@@ -106,7 +106,7 @@ order by name''', [building: building, id: id]
 
     def createRoom(RoomCommand cmd) {
         Room form = new Room(
-                name: cmd.name,
+                name: Room.findByBuildingAndName(cmd.building, cmd.name) ? "${cmd.name}*" : cmd.name,
                 building: cmd.building,
                 seat: cmd.seat,
                 measure: cmd.measure,
@@ -171,6 +171,11 @@ order by name''', [building: building, id: id]
             plan.errors.each {
                 println(it)
             }
+        }
+        List<PlanRoom> list = PlanRoom.findAllByPlan(plan)
+        list?.each {
+            it.room.setStatus('DELETED')
+            it.room.save(flush: true)
         }
     }
 }

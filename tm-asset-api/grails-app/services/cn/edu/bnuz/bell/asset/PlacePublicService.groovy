@@ -23,18 +23,12 @@ dr.labels as labels
 from DvRoom dr
 where dr.id > 100 and dr.status <> 'DELETED'
 '''
-        if (cmd.forPlan) {
-            return listPlan(cmd)
-        } else if (!cmd.criterion.isEmpty()) {
+        if (!cmd.criterion.isEmpty()) {
             sqlStr += " ${cmd.criterion} order by dr.building, dr.name"
         } else {
             return null
         }
         DvRoom.executeQuery sqlStr, cmd.args
-    }
-
-    def listPlan(RoomPublicOptionCommand cmd) {
-
     }
 
     def getTerms() {

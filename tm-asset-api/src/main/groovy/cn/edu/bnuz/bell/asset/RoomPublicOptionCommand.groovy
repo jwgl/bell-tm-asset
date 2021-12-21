@@ -70,6 +70,9 @@ class RoomPublicOptionCommand implements Validateable {
         if (isReform) {
             criterion += " and dr.isReform is true"
         }
+        if (labels) {
+            criterion += " and  exists (select 1 from RoomLabel rl join rl.label l where rl.room.id = dr.id and l.id in (:labels) and rl.dateExpired > current_date)"
+        }
 
         return criterion
     }
