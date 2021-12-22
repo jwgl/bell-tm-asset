@@ -73,6 +73,7 @@ join r.placeType tp
 where r.id = :id and r.id > 100
 ''', [id: id]
         if (result) {
+            result[0]['labels'] = getRoomLabelsForPlan(id)
             def labels = labelService.labels()
             return [
                     form: result[0],
@@ -177,5 +178,19 @@ order by name''', [building: building, id: id]
             it.room.setStatus('DELETED')
             it.room.save(flush: true)
         }
+    }
+
+    def getRoomLabelsForPlan(Long id) {
+        RoomLabel.executeQuery'''
+select new map(l.id as id)
+from RoomLabel rl
+join rl.label l
+join l.type t
+join l.creator u
+where rl.room.id = :id
+and (rl.deleted is null or deleted is false)
+and current_date < rl.dateExpired
+and t.single is not true
+''', [id: id]
     }
 }
