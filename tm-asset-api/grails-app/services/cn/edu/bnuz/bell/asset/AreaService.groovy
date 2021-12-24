@@ -8,6 +8,7 @@ import grails.gorm.transactions.Transactional
 class AreaService {
     SecurityService securityService
     AssetModelService assetModelService
+    HindFieldService hindFieldService
 
     def list(AssetOptionCommand cmd) {
         def sqlStr = '''
@@ -53,6 +54,7 @@ and not exists(select tf.id from TransferItem ti join ti.transferForm tf where t
                 buildings: buildings,
                 places: places,
                 assetNames: assetNames,
+                fields: hindFieldService.findByTableName("asset"),
                 states: states,
         ]
     }

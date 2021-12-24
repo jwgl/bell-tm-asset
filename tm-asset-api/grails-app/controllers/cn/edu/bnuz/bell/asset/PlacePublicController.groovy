@@ -11,6 +11,7 @@ class PlacePublicController {
     LabelService labelService
     SecurityService securityService
     PlanService planService
+    HindFieldService hindFieldService
 
     def index(RoomPublicOptionCommand cmd) {
         if (cmd.forPlan) {
@@ -24,6 +25,7 @@ class PlacePublicController {
                     labels: labelService.labels(),
                     labelTypes: labelService.labelTypes(),
                     terms: placePublicService.terms,
+                    fields: hindFieldService.findByTableName("room"),
                     placeTypes: RoomType.executeQuery("select distinct new map(t.level1 as name) from RoomType t order by t.level1")
             ])
         }

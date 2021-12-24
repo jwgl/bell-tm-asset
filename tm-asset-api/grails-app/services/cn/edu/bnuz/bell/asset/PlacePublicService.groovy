@@ -18,6 +18,7 @@ dr.status as status,
 dr.department as department,
 dr.groups as groups,
 dr.roomType as roomType,
+dr.planning as planning,
 dr.labels as labels
 )
 from DvRoom dr

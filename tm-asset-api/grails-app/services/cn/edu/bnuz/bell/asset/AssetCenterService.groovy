@@ -13,6 +13,7 @@ class AssetCenterService {
     PlaceService placeService
     SecurityService securityService
     LogService logService
+    HindFieldService hindFieldService
 
     def list(AssetOptionCommand cmd) {
         def sqlStr = '''
@@ -54,6 +55,7 @@ left join a.supplier s
                 places: placeService.places,
                 assetNames: assetNames,
                 states: states,
+                fields: hindFieldService.findByTableName("asset"),
                 areas: UserArea.executeQuery(
                         "select distinct r.building from UserArea u join u.room r"),
         ]

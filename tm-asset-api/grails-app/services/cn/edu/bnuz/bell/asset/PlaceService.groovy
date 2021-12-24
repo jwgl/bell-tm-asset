@@ -1,5 +1,6 @@
 package cn.edu.bnuz.bell.asset
 
+import cn.edu.bnuz.bell.asset.dv.DvRoom
 import cn.edu.bnuz.bell.security.SecurityService
 import grails.converters.JSON
 import grails.gorm.transactions.Transactional
@@ -11,30 +12,23 @@ class PlaceService {
     LogService logService
 
     def list(RoomOptionCommand cmd) {
-        def sqlStr = '''
+        DvRoom.executeQuery'''
 select new map(
-r.id as id,
-r.name as name,
-r.building as building,
-r.seat as seat,
-r.measure as measure,
-r.status as status,
-r.purpose as purpose,
-r.note as note,
-r.seatType as seatType,
-d.name as department,
-tp.level1 as groups,
-tp.level2 as roomType
+dr.id as id,
+dr.name as name,
+dr.building as building,
+dr.seat as seat,
+dr.measure as measure,
+dr.status as status,
+dr.department as department,
+dr.groups as groups,
+dr.roomType as roomType,
+dr.planning as planning,
+dr.labels as labels
 )
-from Room r
-join r.department d
-join r.placeType tp
-where r.id not between 2 and 5
+from DvRoom dr
+where dr.id > 100 and dr.status <> 'DELETED'
 '''
-        if (!cmd.criterion.isEmpty()) {
-            sqlStr += " and ${cmd.criterion} order by r.building, r.name"
-        }
-        Room.executeQuery sqlStr, cmd.args
     }
 
     def create(RoomCommand cmd) {
