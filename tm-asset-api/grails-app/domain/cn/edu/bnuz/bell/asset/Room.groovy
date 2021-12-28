@@ -1,5 +1,7 @@
 package cn.edu.bnuz.bell.asset
 
+import cn.edu.bnuz.bell.orm.PostgreSQLStringArrayUserType
+
 
 class Room {
 
@@ -53,6 +55,11 @@ class Room {
      */
     String note
 
+    /**
+     * 照片
+     */
+    String[] pictures
+
     static hasMany = [termStates: Plan]
 
     static mapping = {
@@ -69,12 +76,14 @@ class Room {
         purpose     type: 'text', comment: '功能'
         department  comment: '使用部门'
         note        length: 200, comment: '备注'
+        pictures    sqlType: 'text[]', type: PostgreSQLStringArrayUserType, comment: '场地照片'
     }
 
     static constraints = {
         note nullable: true
         purpose nullable: true
         seatType nullable: true
+        pictures nullable: true
         name unique: 'building'
     }
 }

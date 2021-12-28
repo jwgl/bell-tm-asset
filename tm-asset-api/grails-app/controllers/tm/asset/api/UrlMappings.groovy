@@ -4,7 +4,9 @@ class UrlMappings {
 
     static mappings = {
         "/users"(resources: 'user', includes:[]){
-            "/places"(resources: 'place')
+            "/places"(resources: 'place') {
+                "/pictures"(controller: 'place', action: 'savePicture', method: 'POST')
+            }
             "/placePublics"(resources: 'placePublic')
             "/receiptForms"(resources: 'receiptForm') {
                 "/approvers"(controller: 'receiptForm', action: 'approvers', method: 'GET')
@@ -39,7 +41,7 @@ class UrlMappings {
             }
             "/userAreas"(resources: 'userArea')
         }
-
+        "/placePictures"(resources: 'placePicture')
         "/models"(resources: 'model', include: ['index', 'save'])
         "/output"(resources: 'output', include: ['index'])
         "/attachments"(resources: 'attachment', includes: ['index'])

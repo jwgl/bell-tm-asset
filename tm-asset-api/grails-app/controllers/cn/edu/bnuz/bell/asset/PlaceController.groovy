@@ -79,4 +79,10 @@ class PlaceController {
             renderForbidden()
         }
     }
+
+    @PreAuthorize('hasAnyAuthority("PERM_ASSET_PLACE_WRITE", "PERM_ASSET_PLACE_EDIT")')
+    def savePicture(Long placeId) {
+        List<String> list = request.JSON as List<String>
+        renderJson placeService.savePictures(placeId, list)
+    }
 }

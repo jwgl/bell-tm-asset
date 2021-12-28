@@ -1,6 +1,7 @@
 package cn.edu.bnuz.bell.asset
 
 import cn.edu.bnuz.bell.asset.dv.DvRoom
+import cn.edu.bnuz.bell.http.BadRequestException
 import cn.edu.bnuz.bell.security.SecurityService
 import grails.converters.JSON
 import grails.gorm.transactions.Transactional
@@ -113,6 +114,7 @@ r.measure as measure,
 r.status as status,
 r.purpose as purpose,
 r.note as note,
+r.pictures as pictures,
 r.seatType as seatType,
 d.name as department,
 tp.level1 as groups,
@@ -253,6 +255,22 @@ join pr.plan p
 join pr.room r
 where r.id = :id
 ''', [id: roomId]
+    }
+
+    def savePictures(Long id, List<String> pictures) {
+        Room room = Room.load(id)
+        if (room) {
+            room.setPictures(pictures?.toArray() as String[])
+            if(!room.save()) {
+                room.errors.each {
+                    println it
+                }
+            } else {
+                return pictures
+            }
+        } else {
+            throw new BadRequestException()
+        }
     }
 
 }
