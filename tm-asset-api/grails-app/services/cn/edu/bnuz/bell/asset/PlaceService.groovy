@@ -1,5 +1,7 @@
 package cn.edu.bnuz.bell.asset
 
+import cn.edu.bnuz.bell.asset.dv.DvRoom
+import cn.edu.bnuz.bell.http.BadRequestException
 import cn.edu.bnuz.bell.security.SecurityService
 import grails.converters.JSON
 import grails.gorm.transactions.Transactional
@@ -11,30 +13,23 @@ class PlaceService {
     LogService logService
 
     def list(RoomOptionCommand cmd) {
-        def sqlStr = '''
+        DvRoom.executeQuery'''
 select new map(
-r.id as id,
-r.name as name,
-r.building as building,
-r.seat as seat,
-r.measure as measure,
-r.status as status,
-r.purpose as purpose,
-r.note as note,
-r.seatType as seatType,
-d.name as department,
-tp.level1 as groups,
-tp.level2 as roomType
+dr.id as id,
+dr.name as name,
+dr.building as building,
+dr.seat as seat,
+dr.measure as measure,
+dr.status as status,
+dr.department as department,
+dr.groups as groups,
+dr.roomType as roomType,
+dr.planning as planning,
+dr.labels as labels
 )
-from Room r
-join r.department d
-join r.placeType tp
-where r.id not between 2 and 5
+from DvRoom dr
+where dr.id > 100 and dr.status <> 'DELETED'
 '''
-        if (!cmd.criterion.isEmpty()) {
-            sqlStr += " and ${cmd.criterion} order by r.building, r.name"
-        }
-        Room.executeQuery sqlStr, cmd.args
     }
 
     def create(RoomCommand cmd) {
@@ -88,11 +83,8 @@ where r.id not between 2 and 5
         form.setMeasure(cmd.measure)
         if (securityService.hasPermission('PERM_ASSET_PLACE_WRITE')) {
             form.setName(cmd.name)
-            form.setBuilding(cmd.building)
             form.setStatus(cmd.status)
-            form.setPurpose(cmd.purpose)
             form.setNote(cmd.note)
-            form.setSeatType(cmd.seatType)
             form.setDepartment(Dept.load(cmd.departmentId))
             form.setPlaceType(RoomType.load(cmd.placeTypeId))
         }
@@ -122,6 +114,7 @@ r.measure as measure,
 r.status as status,
 r.purpose as purpose,
 r.note as note,
+r.pictures as pictures,
 r.seatType as seatType,
 d.name as department,
 tp.level1 as groups,
@@ -134,24 +127,7 @@ where r.id = :id
 ''', [id: id]
         if (result) {
             result[0]['logs'] = PlaceChangeLog.findAllByPlace(Room.load(id), [sort: 'dateCreated', order: 'asc'])
-            def labels = RoomLabel.executeQuery'''
-select new map(
-l.name as labelName,
-l.business as business,
-t.name as type,
-t.single as single,
-t.color as color,
-u.name as creator,
-u.id as userId
-)
-from RoomLabel rl
-join rl.label l
-join l.type t
-join l.creator u
-where rl.room.id = :id
-and (rl.deleted is null or deleted is false)
-and current_date < rl.dateExpired
-''', [id: id]
+            def labels = getRoomLabels(id)
             if (securityService.hasRole('ROLE_ASSET_LABEL_ADMIN')) {
                 result[0]['labels'] = labels
             } else {
@@ -159,7 +135,7 @@ and current_date < rl.dateExpired
                     return !it.single || it.userId == securityService.userId
                 }
             }
-
+            result[0]['plans'] = findPlanByRoom(id)
             return result[0]
         } else {
             return null
@@ -233,4 +209,68 @@ order by name'''
     Boolean hasAsset(Long id) {
         Asset.countByRoom(Room.load(id))
     }
+
+    /**
+     * 存在未完成计划的场地，不允许再新建计划
+     */
+    Boolean planAble(Long id) {
+        def result = PlanRoom.executeQuery("select 1 from PlanRoom pr where pr.room.id = :roomId and pr.plan.status = :status",
+                [roomId: id, status: 'CREATED'])
+        return result ? false : true
+    }
+
+    def getRoomLabels(Long id) {
+        RoomLabel.executeQuery'''
+select new map(
+l.name as labelName,
+l.business as business,
+t.name as type,
+t.single as single,
+t.color as color,
+u.name as creator,
+u.id as userId
+)
+from RoomLabel rl
+join rl.label l
+join l.type t
+join l.creator u
+where rl.room.id = :id
+and (rl.deleted is null or deleted is false)
+and current_date < rl.dateExpired
+''', [id: id]
+    }
+
+    def findPlanByRoom(Long roomId) {
+        PlanRoom.executeQuery'''
+select new map(
+p.name as name,
+p.status as status,
+p.termId as termId,
+p.dateCreated as dateCreated,
+p.action as action,
+p.info as info 
+)
+from PlanRoom pr
+join pr.plan p
+join pr.room r
+where r.id = :id
+''', [id: roomId]
+    }
+
+    def savePictures(Long id, List<String> pictures) {
+        Room room = Room.load(id)
+        if (room) {
+            room.setPictures(pictures?.toArray() as String[])
+            if(!room.save()) {
+                room.errors.each {
+                    println it
+                }
+            } else {
+                return pictures
+            }
+        } else {
+            throw new BadRequestException()
+        }
+    }
+
 }

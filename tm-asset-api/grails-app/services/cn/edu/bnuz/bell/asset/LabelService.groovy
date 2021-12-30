@@ -90,6 +90,7 @@ where single = false or creator = :user
         RoomLabel form = new RoomLabel(
                 label: Label.load(cmd.labelId),
                 room: Room.load(cmd.roomId),
+                dateCreated: new Date(),
                 dateExpired: cmd.dateExpire
         )
         if (!form.save()) {

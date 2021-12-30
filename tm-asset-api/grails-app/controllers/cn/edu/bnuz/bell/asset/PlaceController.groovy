@@ -10,13 +10,16 @@ class PlaceController {
     PlaceService placeService
     LabelService labelService
     SecurityService securityService
+    HindFieldService hindFieldService
 
     def index(RoomOptionCommand cmd) {
         def createAble = securityService.hasPermission('PERM_ASSET_PLACE_WRITE')
         if (!createAble) {
             cmd.rooms = areaService.areas
         }
-        renderJson([createAble: createAble, rooms: placeService.list(cmd)])
+        renderJson([createAble: createAble,
+                    rooms: placeService.list(cmd),
+                    fields: hindFieldService.findByTableName("room")])
     }
 
     def create(){
@@ -45,7 +48,8 @@ class PlaceController {
         renderJson([createAble:  securityService.hasPermission('PERM_ASSET_PLACE_WRITE'),
                     form: placeService.getFormInfo(id),
                     labels: labels,
-                    labelTypes: labelTypes
+                    labelTypes: labelTypes,
+                    planAble: placeService.planAble(id)
         ])
     }
 
@@ -74,5 +78,11 @@ class PlaceController {
         } else {
             renderForbidden()
         }
+    }
+
+    @PreAuthorize('hasAnyAuthority("PERM_ASSET_PLACE_WRITE", "PERM_ASSET_PLACE_EDIT")')
+    def savePicture(Long placeId) {
+        List<String> list = request.JSON as List<String>
+        renderJson placeService.savePictures(placeId, list)
     }
 }

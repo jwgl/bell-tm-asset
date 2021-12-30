@@ -88,7 +88,7 @@ order by c.id desc
 
     def create(String userId, CartCommand cmd) {
         AssetCart.executeUpdate'''
-update AssetCart
+create AssetCart
 set name = :cartName, dateCreated = :date
 where user.id = :userId and asset.id in (:ids)''', [userId: userId, cartName: cmd.cartName, date: LocalDate.now(), ids: cmd.ids]
     }

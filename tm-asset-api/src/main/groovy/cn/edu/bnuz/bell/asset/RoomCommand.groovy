@@ -53,6 +53,11 @@ class RoomCommand {
      */
     String note
 
+    /**
+     * 标签
+     */
+    List<Long> labels
+
     String department
     String placeType
 }

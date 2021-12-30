@@ -78,6 +78,8 @@ dependencies {
     compile "cn.edu.bnuz.bell:bell-core-cdm:0.1"
     compile "cn.edu.bnuz.bell:bell-core-sys:0.1"
     implementation("com.vladmihalcea:hibernate-types-52:${hibernateTypesVersion}")
+    // thumbnail
+    compile 'net.coobird:thumbnailator:0.4.8'
 }
 
 bootRun {
