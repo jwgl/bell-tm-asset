@@ -41,6 +41,7 @@ class UrlMappings {
             }
             "/userAreas"(resources: 'userArea')
         }
+        "/messages"(resources: 'messager')
         "/placePictures"(resources: 'placePicture')
         "/models"(resources: 'model', include: ['index', 'save'])
         "/output"(resources: 'output', include: ['index'])

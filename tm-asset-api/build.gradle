@@ -1,6 +1,7 @@
 buildscript {
     repositories {
         mavenLocal()
+        maven { url 'https://maven.aliyun.com/repository/public' }
         maven { url "https://repo.grails.org/artifactory/core" }
     }
     dependencies {
@@ -21,7 +22,8 @@ apply plugin:"org.grails.plugins.views-json"
 
 repositories {
     mavenLocal()
-    maven { url "https://repo.grails.org/artifactory/core" }
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        maven { url "https://repo.grails.org/artifactory/core" }
 }
 
 configurations {
@@ -80,6 +82,10 @@ dependencies {
     implementation("com.vladmihalcea:hibernate-types-52:${hibernateTypesVersion}")
     // thumbnail
     compile 'net.coobird:thumbnailator:0.4.8'
+
+//    implementation("org.codehaus.xfire:xfire-core:1.2.6")
+    // aliyun
+    compile "com.aliyun:aliyun-java-sdk-core:4.0.3"
 }
 
 bootRun {
