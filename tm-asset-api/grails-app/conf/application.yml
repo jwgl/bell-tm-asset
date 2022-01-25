@@ -150,7 +150,7 @@ bell:
                 - tm
             prefixes:
                 - dv
-                - et
+                - eto
     filesPath: 'D:\temp\tm\asset'
     report:
         service: tm-report

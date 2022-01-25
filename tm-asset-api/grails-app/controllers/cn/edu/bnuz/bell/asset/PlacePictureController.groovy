@@ -7,7 +7,6 @@ import org.springframework.security.access.prepost.PreAuthorize
 import java.nio.file.Files
 
 
-@PreAuthorize('hasAnyAuthority("PERM_ASSET_PLACE_WRITE", "PERM_ASSET_PLACE_EDIT")')
 class PlacePictureController {
     @Value('${bell.filesPath}')
     String filesPath
@@ -21,6 +20,8 @@ class PlacePictureController {
             render status: HttpStatus.NOT_FOUND
         }
     }
+
+    @PreAuthorize('hasAnyAuthority("PERM_ASSET_PLACE_WRITE", "PERM_ASSET_PLACE_EDIT")')
     def save() {
         String prefix = params.prefix
         renderJson ([file: fileTransferService.upload(prefix,  request)])
