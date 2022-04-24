@@ -28,6 +28,13 @@ class UrlMappings {
             "/labellings"(resources: 'labelling')
             "/plans"(resources: 'plan')
             "/hindFields"(resources: 'hindField')
+            "/serviceLogs"(resources: 'placeServiceLog') {
+                collection {
+                    "/places"(controller: 'placeServiceLog', action: 'place', method: 'GET')
+                    "/contacts"(controller: 'placeServiceLog', action: 'contact', method: 'GET')
+                    "/assets"(controller: 'placeServiceLog', action: 'asset', method: 'GET')
+                }
+            }
         }
         "/approvers"(resources: 'approver', includes:[]){
             "/receiptApprovals"(resources: 'receiptApproval', includes:['index']) {

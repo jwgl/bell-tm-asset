@@ -44,29 +44,27 @@ where
 and not (r.id between 2 and 5)
 and not exists(select tf.id from TransferItem ti join ti.transferForm tf where tf.status in ('CREATED', 'SUBMITTED') and ti.asset.id = a.id)
 '''
+        def list = []
         if (!cmd.criterion.isEmpty()) {
             sqlStr += " and ${cmd.criterion}"
+            sqlStr += ' order by r.building, r.name'
+            list = Asset.executeQuery sqlStr, cmd.args + [userId: securityService.userId]
         }
-        sqlStr += ' order by r.building, r.name'
-        def list = Asset.executeQuery sqlStr, cmd.args + [userId: securityService.userId]
         return [
                 list: list,
                 buildings: buildings,
                 places: places,
                 assetNames: assetNames,
                 fields: hindFieldService.findByTableName("asset"),
-                states: states,
+//                states: states,
         ]
     }
 
     def getAssetNames() {
-        Asset.executeQuery'''
+        AssetModel.executeQuery'''
 select distinct new map(a.name as name, a.name as value)
-from Asset a
-left join a.room r,
-UserArea u
-where u.user.id = :userId and u.room = r or r.id = 1
-order by a.name''', [userId: securityService.userId]
+from AssetModel a
+order by a.name'''
     }
 
     def getStates() {
@@ -75,7 +73,7 @@ order by a.name''', [userId: securityService.userId]
 
     def getBuildings() {
         UserArea.executeQuery'''
-select distinct r.building
+select distinct new map(r.building as name, r.building as value)
 from UserArea u
 join u.room r
 where u.user.id = :userId''', [userId: securityService.userId]

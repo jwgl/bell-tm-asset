@@ -7,6 +7,7 @@ class AssetOptionCommand implements Validateable{
     List<String> buildings
     List<String> places
     String state
+    String q
 
     Map getArgs() {
         def arg = [:]
@@ -21,6 +22,9 @@ class AssetOptionCommand implements Validateable{
         }
         if (state) {
             arg += [state: state]
+        }
+        if (q) {
+            arg += [q: "%${q}%"]
         }
         return arg
     }
@@ -39,6 +43,9 @@ class AssetOptionCommand implements Validateable{
         }
         if (state) {
             criterion += "${criterion.isEmpty() ? "" : " and "}a.state = :state"
+        }
+        if (q) {
+            criterion += "${criterion.isEmpty() ? "" : " and "}(a.sn like :q or a.code like :q or a.name like :q or r.name like :q)"
         }
 
         return criterion

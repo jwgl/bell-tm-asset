@@ -2,10 +2,13 @@ package cn.edu.bnuz.bell.asset
 
 import grails.validation.Validateable
 
-import java.time.LocalDate
-
 class PlaceUsageCommand implements Validateable {
-    LocalDate date
+    String logDate
     Integer section
-    String room
+    String roomName
+    String building
+
+    String getName() {
+        return roomName && building ? roomName.replaceAll(building, '') : ''
+    }
 }
