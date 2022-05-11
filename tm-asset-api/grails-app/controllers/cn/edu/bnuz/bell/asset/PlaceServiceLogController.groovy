@@ -10,7 +10,9 @@ class PlaceServiceLogController {
 	
     def index() {
         renderJson ([logs: placeServiceLogService.list(),
-                     fields: hindFieldService.findByTableName("serviceLog")])
+                     fields: hindFieldService.findByTableName("serviceLog"),
+                     isEditor: placeServiceLogService.isEditor()
+        ])
     }
 
     def create(){
@@ -22,6 +24,22 @@ class PlaceServiceLogController {
         bindData(cmd, request.JSON)
         def form = placeServiceLogService.create(cmd)
         renderJson([id: form.id])
+    }
+
+    def show(Long id) {
+        renderJson(placeServiceLogService.getFormInfo(id))
+    }
+
+    def edit(Long id) {
+        renderJson(placeServiceLogService.getFormForEdit(id))
+    }
+
+    def update(Long id) {
+        ServiceLogCommand cmd = new ServiceLogCommand()
+        bindData(cmd, request.JSON)
+        cmd.id = id
+        placeServiceLogService.update(cmd)
+        renderOk()
     }
 
     def place(String q) {

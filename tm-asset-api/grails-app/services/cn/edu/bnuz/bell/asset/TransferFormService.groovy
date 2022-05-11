@@ -47,6 +47,9 @@ where o.id = :userId
     def create(String userId, TransferFormCommand cmd) {
         TransferType type = TransferType.findByName(cmd.transferType)
         Room toPlace = Room.load(cmd.toId)
+        if (cmd.fromId == 1 && type.action == 'TRANSFER') {
+            throw new BadRequestException('非法操作！')
+        }
         def form = new TransferForm(
                 note: cmd.note,
                 operator: User.load(userId),

@@ -1,6 +1,7 @@
 package cn.edu.bnuz.bell.asset
 
 class ServiceLogCommand {
+    Long id
     String building
     String roomName
     String logDate

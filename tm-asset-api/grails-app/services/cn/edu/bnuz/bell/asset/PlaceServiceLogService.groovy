@@ -34,11 +34,16 @@ select new map(
     l.status as status,
     l.dateFinished as dateFinished,
     l.note as note,
+    max(t.id) as termId,
     u.name as userName
 )
 from ServiceLog l
 join l.department d
 join l.user u
+, Term t
+where t.id >= 20201 and l.logDate >= t.startDate
+group by l.id, l.building, l.roomName, l.logDate, l.section, 
+d.name, l.contact, l.type, l.item, l.status, l.dateFinished, l.note, u.name
 '''
     }
 
@@ -80,7 +85,6 @@ select new map(
     }
 
     def findAsset(PlaceUsageCommand cmd) {
-        println cmd.name
         Asset.executeQuery'''
 select new map(
 a.name as name,
@@ -108,7 +112,7 @@ where r.building = :building and r.name = :name and a.state = 'USING'
                 type: cmd.type,
                 item: cmd.item,
                 status: cmd.dateFinished ? '完成' : '待完成',
-                dateFinished: LocalDate.parse(cmd.dateFinished),
+                dateFinished: cmd.dateFinished ? LocalDate.parse(cmd.dateFinished) : null,
                 note: cmd.note
         )
         if (!form.save()) {
@@ -117,5 +121,71 @@ where r.building = :building and r.name = :name and a.state = 'USING'
             }
         }
         return form
+    }
+
+    def update(ServiceLogCommand cmd) {
+        ServiceLog form = ServiceLog.load(cmd.id)
+        form.setBuilding(cmd.building)
+        form.setRoomName(cmd.roomName)
+        form.setLogDate(LocalDate.parse(cmd.logDate))
+        form.setSection(cmd.section)
+        form.setDepartment(Department.load(cmd.departmentId))
+        form.setType(cmd.type)
+        form.setItem(cmd.item)
+        form.setStatus(cmd.dateFinished ? '完成' : '待完成')
+        form.setDateFinished(cmd.dateFinished ? LocalDate.parse(cmd.dateFinished) : null)
+        form.setNote(cmd.note)
+        form.save(flush: true)
+    }
+
+    def getFormInfo(Long id) {
+        def result = ServiceLog.executeQuery'''
+select new map(
+s.id as id,
+s.building as building,
+s.roomName as roomName,
+s.logDate as logDate,
+s.section as section,
+d.name as departmentName,
+s.contact as contact,
+s.type as type,
+s.item as item,
+s.user.id as userId,
+s.status as status,
+s.note as note
+)
+from ServiceLog s join s.department d
+where s.id = :id
+''', [id: id]
+        return [
+                form: result[0],
+                createAble: result[0].userId == securityService.userId && result[0].status == '待完成'
+        ]
+    }
+
+    def getFormForEdit(Long id) {
+        Term term = termService.activeTerm
+        def result = ServiceLog.executeQuery'''
+select new map(
+s.id as id,
+s.building as building,
+s.roomName as roomName,
+s.logDate as logDate,
+s.section as section,
+s.department.id as department,
+s.contact as contact,
+s.type as type,
+s.item as item,
+s.note as note
+)
+from ServiceLog s
+where s.id = :id and s.user.id = :userId and s.dateFinished is null
+''', [id: id, userId: securityService.userId]
+        return [startDate: term.startDate, form: result[0], departments: departmentService.allDepartments]
+    }
+
+    def isEditor() {
+        def result = PlaceKeeper.executeQuery("select a from PlaceKeeper a where a.user.id = :id and grantString like '%W%'", [id: securityService.userId])
+        return result?.size() > 0
     }
 }
