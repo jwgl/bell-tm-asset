@@ -159,7 +159,8 @@ where s.id = :id
 ''', [id: id]
         return [
                 form: result[0],
-                createAble: result[0].userId == securityService.userId && result[0].status == '待完成'
+                createAble: result[0].userId == securityService.userId && result[0].status == '待完成',
+                assets: findAsset(new PlaceUsageCommand(building: result[0]?.building, roomName: result[0]?.roomName))
         ]
     }
 
