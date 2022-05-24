@@ -22,16 +22,18 @@ select new map(
     a.sn as sn,
     a.code as code,
     a.name as name,
-    a.price as price,
     a.unit as unit,
     a.dateBought as dateBought,
     a.qualifyMonth as qualifyMonth,
     a.assetType as assetType,
     a.pcs as pcs,
+    a.price as price,
+    a.total as total,
     a.note as note,
     a.state as state,
     s.name as supplier,
     r.building as building,
+    r.id as roomId,
     r.name as place,
     t.level2 as placeType,
     m.id as assetModelId,
@@ -45,24 +47,22 @@ left join a.room r
 left join r.placeType t
 left join a.supplier s
 '''
+        def list = []
         if (!cmd.criterion.isEmpty()) {
             sqlStr += " where ${cmd.criterion} order by r.building, r.name"
+            list = Asset.executeQuery sqlStr, cmd.args
         }
-        def list = Asset.executeQuery sqlStr, cmd.args
         return [
                 list: list,
                 buildings: placeService.buildings,
                 places: placeService.places,
                 assetNames: assetNames,
-                states: states,
                 fields: hindFieldService.findByTableName("asset"),
-                areas: UserArea.executeQuery(
-                        "select distinct r.building from UserArea u join u.room r"),
         ]
     }
 
     def getAssetNames() {
-        Asset.executeQuery("select distinct new map(name as name, name as value) from Asset order by name")
+        AssetModel.executeQuery("select distinct new map(name as name, name as value) from AssetModel order by name")
     }
 
     def getStates() {

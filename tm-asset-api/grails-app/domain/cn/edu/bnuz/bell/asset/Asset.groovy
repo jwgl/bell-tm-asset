@@ -165,6 +165,8 @@ class Asset {
                 switch (event) {
                     case Event.CHECKOUT:
                         return statusByRoom in ([Status.STANDBY , Status.USING] as Set<Status>)
+                    case Event.TRANSFER:
+                        return statusByRoom == Status.USING
                     case Event.STOP:
                     case Event.ALLOT:
                         return statusByRoom == Status.STANDBY
