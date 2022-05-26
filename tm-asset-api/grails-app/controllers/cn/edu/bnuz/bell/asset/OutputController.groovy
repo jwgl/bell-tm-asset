@@ -50,6 +50,9 @@ class OutputController {
                         userId: securityService.userId
                 ]
                 break
+            case 'service-log':
+                parameters = [ userId: securityService.userId ]
+                break
             default: throw new BadRequestException()
         }
 
